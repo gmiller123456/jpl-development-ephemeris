@@ -1,0 +1,5 @@
+From "Fundamental Ephemeris Computations" P155.
+The order of the series in the header file GOUPR 1050 are:
+Mercury, Venus, EMB, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Moon, Sun, nutation, lunar librations
+
+Explanatory Supplement equations 14.19 and 14.20 show how to generate and use the polynomials
