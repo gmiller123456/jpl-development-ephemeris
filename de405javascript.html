@@ -1,0 +1,108 @@
+<html>
+<head>
+</head>
+<body>
+<script src="ascp2020.405.chunk.js"></script>
+<script>
+
+//Get data start JD
+//Get # of days per chunk
+//Get nubmer of coefficients per chunk
+//Determine which file JD falls in
+//Determine chunk JD falls in.
+//Determine sub-inerval JD falls in
+//Determine offset for requested series (planet)
+//Determine offset for requested variable (e.g. X,Y, or Z)
+//Add series offset + variable's offset + sub-interval offset 
+//Determine valid JD range for sub-interval
+//Normalize JD over subinterval
+
+class DE{
+	constructor(DEName, startJD, endJD, daysPerChunk, coefficientsPerChunk){
+		this.name=DEName;
+		this.start=startJD;
+		this.end=endJD;
+		this.daysPerChunk=daysPerChunk;
+		this.coefficientsPerChunk=coefficientsPerChunk;
+	}
+}
+
+class JPLSeries{
+	constructor(de,seriesName,seriesOffset,numberOfProperties,numberOfCoefficients,numberOfSubIntervals){
+		this.de=de;
+		this.name=seriesName;
+		this.offset=seriesOffset-1;
+		this.numberOfProperties=numberOfProperties;
+		this.numberOfCoefficients=numberOfCoefficients;
+		this.numberOfSubIntervals=numberOfSubIntervals;
+	}
+
+	getAllPropertiesForSeries(JD,coefficients){
+		for(let i=0;i<this.numberOfProperties;i++){
+			console.log(this.computeJPLSeries(i,coefficients));
+		}
+	}
+
+	computeJPLSeries(propertyNumber,coefficients){
+		const c=new Array();
+		for(let i=0;i<this.numberOfCoefficients;i++){
+			c[i]=coefficients[i+this.offset+propertyNumber*this.numberOfCoefficients];
+		}
+		let p=this.computePolynomial(-1,c);
+		return p;
+	}
+
+	computePolynomial(x,coefficients){
+		//Equation 14.20 from Explanetory Supplement 3rd ed.
+		const t=new Array();
+		t[0]=1;
+		t[1]=x;
+
+		for(let n=2;n<coefficients.length; n++){
+			let tn=2*x*t[n-1]-t[n-2];
+			t[n]=tn;
+		}
+
+		//Multiply the polynomial by the coefficients.
+		//Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
+		let pos=0;
+		for(let i=coefficients.length-1;i>=0;i--){
+			pos+=coefficients[i]*t[i];
+		}
+		return pos;
+	}
+}
+
+let series;
+
+init();
+series[0].getAllPropertiesForSeries(2458832.5,de405chunk);
+
+function init(){
+	//First three parameters (after "name") are from "GROUP 1030" in header file
+	//Last parameter is NCOEFF from first line of header file
+	const de=new DE("de405",2305424.50,2525008.50,32,1018);
+
+	//Parameters 2,4,5 are from "GROUP 1050" in header file
+	series=new Array();
+	series[0]=new JPLSeries(de,"mercury",3,3,14,4);
+	series[1]=new JPLSeries(de,"venus",171,3,10,2);
+	series[2]=new JPLSeries(de,"emb",231,3,13,2);
+	series[3]=new JPLSeries(de,"mars",309,3,11,1);
+	series[4]=new JPLSeries(de,"jupiter",342,3,8,1);
+	series[5]=new JPLSeries(de,"saturn",366,3,7,1);
+	series[6]=new JPLSeries(de,"uranus",387,3,6,1);
+	series[7]=new JPLSeries(de,"neptune",405,3,6,1);
+	series[8]=new JPLSeries(de,"pluto",423,3,6,1);
+	series[9]=new JPLSeries(de,"moon",441,3,13,8);
+	series[10]=new JPLSeries(de,"sun",753,3,11,2);
+	series[11]=new JPLSeries(de,"nutation",819,2,10,4);
+	series[12]=new JPLSeries(de,"libration",899,3,10,4);
+	//series[13]=JPLSeries(de,"mantle-velocity",0,0,0,0);
+	//series[14]=JPLSeries(de,"tt-tdb",0,0,0,0);
+}
+
+
+</script>
+</body>
+</html>
