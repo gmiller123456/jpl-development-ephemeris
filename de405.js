@@ -116,15 +116,29 @@ class JPLSeries{
 
 		//Multiply the polynomial by the coefficients.
 		//Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
-		let pos=0;
+		let position=0;
 		for(let i=coefficients.length-1;i>=0;i--){
-			pos+=coefficients[i]*t[i];
+			position+=coefficients[i]*t[i];
 		}
 
+		//Compute velocity (just the derivitave of the above)
+		const v=new Array();
+		v[0]=0;
+		v[1]=0;
+		v[2]=1;
+		v[3]=4*x;
+		for(let n=4;n<coefficients.length;n++){
+			v[n]=2*x*v[n-1]+2*t[n-1]-v[n-2];
+		}
+
+		let velocity=0;
+		for(let i=coefficients.length-1;i>=0;i--){
+			velocity+=v[i]*coefficients[i];
+		}
 
 		let retval=new Array();
-		retval[0]=pos;
-		retval[1]=0;
+		retval[0]=position;
+		retval[1]=velocity;
 		return retval;
 	}
 }
