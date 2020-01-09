@@ -7,6 +7,52 @@
 <script>
 
 const au=0.149597870691000015E+09;
+let map=new Array();
+map[0]=0;
+map[1]=0;
+map[2]=1;
+map[3]=13;
+map[4]=3;
+map[5]=4;
+map[6]=5;
+map[7]=6;
+map[8]=7;
+map[9]=8;
+map[10]=9;
+map[11]=10;
+map[12]=12;
+map[13]=2;
+map[14]=11;
+map[15]=12;
+
+function get(series,jd,x){
+	if(series==12 || series==0){
+		return 0;
+	}
+
+	let s=map[series];
+
+	let de=new DE405();
+	let b=new Array();
+	for(let i=0;i<6;i++){b[i]=0;}
+
+	if(series==3){
+		const emb=de.getAllPropertiesForSeries(2,jd);
+		const moon=de.getAllPropertiesForSeries(9,jd);
+		b=de.getEarthPositionFromEMB(emb,moon);
+	} else if(series==10){
+		const emb=de.getAllPropertiesForSeries(2,jd);
+		const moon=de.getAllPropertiesForSeries(9,jd);
+		const earth=de.getEarthPositionFromEMB(emb,moon);
+		for(let i=0;i<6;i++){
+			moon[i]+=earth[i];
+		}
+		b=moon;
+	} else {
+		b=de.getAllPropertiesForSeries(s,jd);
+	}
+	return b[x-1];
+}
 
 function testpo(deNumber,year,month,day,jd,t,c,x,expectedValue){
 	/*
@@ -22,22 +68,30 @@ C
 C             (IF NUTATIONS ARE WANTED, SET NTARG = 14. FOR LIBRATIONS,
 C              SET NTARG = 15. SET NCENT=0.)
 	*/
-	if(c==3 || t==3){return;}
-	if(t>11 || c>11){return;}
-	if(c==10 || t==10){return;}
-	if(x>3){return;} //Velocity not implemented yet
-	let de=new DE405();
-	const t1=de.getAllPropertiesForSeries(t-1,jd);
-	if(c!=12){
-		const t2=de.getAllPropertiesForSeries(c-1,jd);
-		t1[x-1]-=t2[x-1];
+	//if(x>3){skipped++; return;} //Velocity not implemented yet
+	//if(x>2 && t==14){skipped++; return;} //Nutation velocity not implemented
+
+	t1=get(t,jd,x);
+	t2=get(c,jd,x);
+
+	v=t1-t2;
+
+	let error=Math.abs((v/au)-expectedValue);
+	if(t==15 || t==14){error=Math.abs(v-expectedValue);}
+	if(error>1.0E-13 || isNaN(error)){
+		console.log(`Fail: ${t}\t${c}\t${x}\t${expectedValue}\t${v/au}\tDiff=${error}`);
+		fail++;
 	}
-	const error=(t1[x-1]/au)-expectedValue;
-	console.log(`${error}\t${t}\t${c}`);
 	tests++;
 }
 let tests=0;
+let fail=0;
+let skipped=0;
 
+//testpo(405,  2039, 5,1, 2465909.5, 10, 13,  2,       0.0019385302022);
+allTests();
+
+function allTests(){
 testpo(405,  2020, 5,1, 2458970.5, 11,  7,  5,      -0.0027229279627);
 testpo(405,  2020, 6,1, 2459001.5, 15,  0,  6,       0.2299882952796);
 testpo(405,  2020, 7,1, 2459031.5, 12,  7,  1,     -15.7950252694036);
@@ -274,8 +328,8 @@ testpo(405,  2039, 9,1, 2466032.5,  7, 13,  1,      -9.9657998637640);
 testpo(405,  2039,10,1, 2466062.5,  8,  6,  2,      15.1145166574692);
 testpo(405,  2039,11,1, 2466093.5,  5,  7,  4,       0.0015178789455);
 testpo(405,  2039,12,1, 2466123.5,  6,  5,  3,      -0.4611202696746);
-
-console.log("Tests ran:"+tests);
+}
+console.log(`Tests ran:${tests} Failed:${fail} Skipped:${skipped}`);
 
 </script>
 </body>

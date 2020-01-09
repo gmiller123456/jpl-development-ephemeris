@@ -25,19 +25,19 @@ class DE405{
 		//Parameters 2,4,5 are from "GROUP 1050" in header file
 		//Paremeter 3 must be inferred from the type of series
 		const series=new Array();
-		series[0]=new JPLSeries(this,"mercury",3,3,14,4);
-		series[1]=new JPLSeries(this,"venus",171,3,10,2);
-		series[2]=new JPLSeries(this,"emb",231,3,13,2);
-		series[3]=new JPLSeries(this,"mars",309,3,11,1);
-		series[4]=new JPLSeries(this,"jupiter",342,3,8,1);
-		series[5]=new JPLSeries(this,"saturn",366,3,7,1);
-		series[6]=new JPLSeries(this,"uranus",387,3,6,1);
-		series[7]=new JPLSeries(this,"neptune",405,3,6,1);
-		series[8]=new JPLSeries(this,"pluto",423,3,6,1);
-		series[9]=new JPLSeries(this,"moon",441,3,13,8);
-		series[10]=new JPLSeries(this,"sun",753,3,11,2);
-		series[11]=new JPLSeries(this,"nutation",819,2,10,4);
-		series[12]=new JPLSeries(this,"libration",899,3,10,4);
+		series[0]=new JPLSeries("mercury",3,3,14,4);
+		series[1]=new JPLSeries("venus",171,3,10,2);
+		series[2]=new JPLSeries("emb",231,3,13,2);
+		series[3]=new JPLSeries("mars",309,3,11,1);
+		series[4]=new JPLSeries("jupiter",342,3,8,1);
+		series[5]=new JPLSeries("saturn",366,3,7,1);
+		series[6]=new JPLSeries("uranus",387,3,6,1);
+		series[7]=new JPLSeries("neptune",405,3,6,1);
+		series[8]=new JPLSeries("pluto",423,3,6,1);
+		series[9]=new JPLSeries("moon",441,3,13,8);
+		series[10]=new JPLSeries("sun",753,3,11,2);
+		series[11]=new JPLSeries("nutation",819,2,10,4);
+		series[12]=new JPLSeries("libration",899,3,10,4);
 		//series[13]=JPLSeries(de,"mantle-velocity",0,0,0,0);
 		//series[14]=JPLSeries(de,"tt-tdb",0,0,0,0);
 		this.series=series;
@@ -50,18 +50,17 @@ class DE405{
 		return this.series[series].getAllPropertiesForSeries(JD,this.coefficients,blockOffset);
 	}
 
-	static getEarthPositionFromEMB(emb,moon){
+	getEarthPositionFromEMB(emb,moon){
 		const earth=new Array();
 		for(let i=0;i<3;i++){
-			earth[j]=emb[j]-moon[j]/(1+earthMoonRatio);
+			earth[i]=emb[i]-moon[i]/(1+this.earthMoonRatio);
 		}
 		return earth;
 	}
 }
 
 class JPLSeries{
-	constructor(de,seriesName,seriesOffset,numberOfProperties,numberOfCoefficients,numberOfSubIntervals){
-		this.de=de;
+	constructor(seriesName,seriesOffset,numberOfProperties,numberOfCoefficients,numberOfSubIntervals){
 		this.name=seriesName;
 		this.offset=seriesOffset-1;
 		this.numberOfProperties=numberOfProperties;
@@ -85,12 +84,14 @@ class JPLSeries{
 		const jd=JD-(startJD+subintervalStart);
 		const x=(jd/subintervalDuration)*2-1;
 
-		const position=new Array();
+		const properties=new Array();
 		for(let i=0;i<this.numberOfProperties;i++){
 			const offset=blockOffset+this.offset+i*this.numberOfCoefficients+subintervalSize*subintervalNumber;
-			position[i]=this.computePropertyForSeries(x,coefficients,offset);
+			let t=this.computePropertyForSeries(x,coefficients,offset);
+			properties[i]=t[0];
+			properties[i+this.numberOfProperties]=t[1];
 		}
-		return position;
+		return properties;
 	}
 
 	computePropertyForSeries(x,coefficients,offset){
@@ -119,6 +120,11 @@ class JPLSeries{
 		for(let i=coefficients.length-1;i>=0;i--){
 			pos+=coefficients[i]*t[i];
 		}
-		return pos;
+
+
+		let retval=new Array();
+		retval[0]=pos;
+		retval[1]=0;
+		return retval;
 	}
 }
