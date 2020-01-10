@@ -59,21 +59,6 @@ function get(series,jd,x){
 }
 
 function testpo(deNumber,year,month,day,jd,t,c,x,expectedValue){
-	/*
-C                1 = MERCURY           8 = NEPTUNE
-C                2 = VENUS             9 = PLUTO
-C                3 = EARTH            10 = MOON
-C                4 = MARS             11 = SUN
-C                5 = JUPITER          12 = SOLAR-SYSTEM BARYCENTER
-C                6 = SATURN           13 = EARTH-MOON BARYCENTER
-C                7 = URANUS           14 = NUTATIONS (LONGITUDE AND OBLIQ)
-C                            15 = LIBRATIONS, IF ON EPH FILE
-C
-C             (IF NUTATIONS ARE WANTED, SET NTARG = 14. FOR LIBRATIONS,
-C              SET NTARG = 15. SET NCENT=0.)
-	*/
-	//if(x>3){skipped++; return;} //Velocity not implemented yet
-	//if(x>2 && t==14){skipped++; return;} //Nutation velocity not implemented
 
 	t1=get(t,jd,x);
 	t2=get(c,jd,x);
@@ -88,6 +73,7 @@ C              SET NTARG = 15. SET NCENT=0.)
 	}
 	tests++;
 }
+
 let tests=0;
 let fail=0;
 let skipped=0;

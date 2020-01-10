@@ -19,9 +19,6 @@ class DE405{
 
 		this.earthMoonRatio=0.813005600000000044E+02  //EMRAT from header constants section
 
-		this.chunkStart=2458832.5;
-		this.chunkEnd=2466160.5;
-
 		//Parameters 2,4,5 are from "GROUP 1050" in header file
 		//Paremeter 3 must be inferred from the type of series
 		const series=new Array();
@@ -42,6 +39,9 @@ class DE405{
 		//series[14]=JPLSeries(de,"tt-tdb",0,0,0,0);
 		this.series=series;
 		this.coefficients=de405;
+
+		this.chunkStart=this.coefficients[0];
+		this.chunkEnd=this.coefficients[this.coefficients.length-this.coefficientsPerBlock+1];
 	}
 
 	getAllPropertiesForSeries(series,JD){
