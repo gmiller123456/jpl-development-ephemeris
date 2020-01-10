@@ -1,0 +1,153 @@
+<html>
+<head>
+<style>
+	body {margin-left: 20%; margin-right: 20%;}
+	.highlight {background: #aaaadd;}
+</style>
+</head>
+<body>
+
+<h2>Overview</h2>
+
+The JPL Development Ephemeris provide high quality, accurate data on the positions of the planets, the moon, and sometimes a few other variables.  Writing software to
+use the JPL files is not difficult.  Unfortunately the documentation is pretty lacking, scattered, and mostly relies on reading the source code of reference implementations.
+Having looked at the reference implementations, I'm pretty convinced that the authors are better astronomers than they are programmers.  I'm not here to judge, I'm certainly
+a much better programmer than I am an astronomer.  I'm hoping with this article I can help bridge the gap, and explain how to use the JPL ephemeris data in terms that are easier
+for programmers to follow.
+
+If you've looked at some of the implementations provided by NASA, or the <a href="https://www.projectpluto.com/jpl_eph.htm">Project Pluto</a> implementations, it might look like
+it's an impossibly hard task to grapple.  But the reality is that these are optimised implementations, designed to work with multiple ephemeris versions, and are written in
+pretty old languages that lack features that make code easier to understand (even if they run slower).  In reality, in most of these implementations, only aboug 10-30 lines of
+code actual deal with calculating the position (or velocity) of the planets.  Most of the rest of the code is dealing with edge cases for dealing with multiple versions,
+memory management, and finding the right coefficients to finally pass to the computation function.
+
+If you're willing to forego the flexibility of being able to process ephemeris files you've never seen before, then writing a program to compute all of the series in a JPL
+ephemeris version can be done in about 100 lines of code in pretty much any modern language.
+
+
+<h2>Why Write Your Own (Do We Really Need Another Ephemeris Generator)?</h2>
+
+Probably the number one reason to write your own software, specific to your needs, is that you won't be locked in to using the format JPL provides the ephemeris data in.  As
+you'll see below, much of the data is independent of each other.  And, if you're only interested in data on the Sun, Earth, and Moon, you can extract that data into your
+own files, considerably reducing the size of the files you have to work with.
+
+Another reason is most of the implementations recommended by the JPL are written in C, which is great if speed is your only concern. But modern computing environments aren't
+very friendly to the C ecosystem.  A web browser won't let you run a C application at all, but is very likely the most widely used platform for applications.  Platforms like
+Android will let you run C, but providing binaries for every type of device is practically impossible.  Other systems, like microcontrollers, have no concept of file systems.
+
+So, there's a lot of room to grow.
+
+<h2>Header Files</h2>
+
+Have a look at the <a href="header.405">DE 405 header file</a>.  Most of the data you see here will not be used by us, we're primarily interested in only a few key parts
+highlighted and explained below.
+
+<pre style="border:solid">
+KSIZE=  2036    NCOEFF=  <span class="highlight">1018</span>
+ 
+GROUP   1010
+ 
+JPL Planetary Ephemeris DE405/DE405
+Start Epoch: JED=  2305424.5 1599 DEC 09 00:00:00 
+Final Epoch: JED=  2525008.5 2201 FEB 20 00:00:00 
+ 
+GROUP   1030
+ 
+  <span class="highlight">2305424.50</span>  <span class="highlight">2525008.50</span>         <span class="highlight">32</span>.
+ 
+GROUP   1040
+ 
+   156
+  DENUM   LENUM   TDATEF  TDATEB  CENTER  CLIGHT  AU      EMRAT   GM1     GM2   
+  GMB     GM4     GM5     GM6     GM7     GM8     GM9     GMS     RAD1    RAD2  
+  RAD4    JDEPOC  X1      Y1      Z1      XD1     YD1     ZD1     X2      Y2    
+  Z2      XD2     YD2     ZD2     XB      YB      ZB      XDB     YDB     ZDB   
+  X4      Y4      Z4      XD4     YD4     ZD4     X5      Y5      Z5      XD5   
+ 
+...
+
+  0.000000000000000000D+00  0.299999999999999974D-03 -0.425951830000000000D-02
+  0.408844299999999994D+00 -0.171450900000000006D+01  0.000000000000000000D+00
+ -0.158167070000000005D-05  0.229888000000000009D+00  0.000000000000000000D+00
+  0.100000000000000000D+01  0.000000000000000000D+00  0.000000000000000000D+00
+ 
+GROUP   1050
+<span class="highlight">
+     3   171   231   309   342   366   387   405   423   441   753   819   899
+    14    10    13    11     8     7     6     6     6    13    11    10    10
+     4     2     2     1     1     1     1     1     1     8     2     4     4
+</span>
+GROUP   1070 
+</pre>
+
+<h3>NCOEFF</h3>
+When we look at the ASCII data files, you'll noticed that it is broken up into blocks, all of which are a fixed length.  The value following NCOEFF= is the length of numbers in this block.  Though, that is parly a lie, as some of the ephemeris data files are padded with zeros.  For example, for DE 405, each block has an extra two zeros, so the
+actual length of the block is 1020 numbers, though the last two numbers will never be used.
+
+<h3>GROUP 1030</h3>
+<p>The first two numbers here are <a href="https://en.wikipedia.org/wiki/Julian_day">Julian Days</a>.  They are the earliest, and latest dates that the ephemeris can generate
+data for.  You'll notice that GROUP 1010, just above GROUP 1030 has the same data, and with their respective Gregorian Calendar dates listed along side.  But if you're
+parsing the file automatically, you'll likely find GROUP 1030 easier to parse.</p>
+<p>The last number, which is 32 in this case, is the total number of days a given block contains data for.  As I said above, each file is broken up into many blocks, and each
+block is only good for a set number of days.  You'll use this later to compute an offset into the full list of data to find the right coefficients.
+</p>
+
+<h3>GROUP 1050</h3>
+<p>This is the most complicated part of the data, and will be explained in more detail when we actually look at the data files.  But the short version is that each column here
+represents a planet (or some other data element).  The oder is consistent across all of the ephemeris versions.  The order is:
+<table border=1 cellspacing=0>
+<tr><th></th><th># Properties</th><th>Name</th></tr>
+<tr><td>1</td><td>3</td><td>Mercury</td></tr>
+<tr><td>2</td><td>3</td><td>Venus</td></tr>
+<tr><td>3</td><td>3</td><td>Earth-Moon barycenter</td></tr>
+<tr><td>4</td><td>3</td><td>Mars </td></tr>
+<tr><td>5</td><td>3</td><td>Jupiter </td></tr>
+<tr><td>6</td><td>3</td><td>Saturn</td></tr>
+<tr><td>7</td><td>3</td><td>Uranus</td></tr>
+<tr><td>8</td><td>3</td><td>Neptune</td></tr>
+<tr><td>9</td><td>3</td><td>Pluto</td></tr>
+<tr><td>10</td><td>3</td><td>Moon (geocentric)</td></tr>
+<tr><td>11</td><td>3</td><td>Sun</td></tr>
+<tr><td>12</td><td>2</td><td>Earth Nutations in longitude and obliquity (IAU 1980 model)</td></tr>
+<tr><td>13</td><td>3</td><td>Lunar mantle libration</td></tr>
+<tr><td>14</td><td>3</td><td>Lunar mantle angular velocity</td></tr>
+<tr><td>15</td><td>1</td><td>TT-TDB (at geocenter)</td></tr>
+</table>
+
+
+</p>
+<p>You'll notice that not all ephemeris versions contain data for every data element.  For example DE405 (above) does not have data for Lunar Mantle Velocity, nor TT-TDB.
+and DE432 (below) does not have data for Nutations, Mantle Velocity, nor TT-TDB.  Exactly how each ephemeris version expresses the fact that they lack data for a
+certain element is somewhat variable.  You'll notice that DE405 just lacks those columns, where DE432 has indicated 0 for the number of coefficients.</p>
+
+
+<b>DE 432 header</b>
+<pre style="border:solid">
+GROUP   1050
+ 
+     3   171   231   309   342   366   387   405   423   441   753   819   819   939   939
+    14    10    13    11     8     7     6     6     6    13    11    <span class="highlight"> 0 </span>   10    <span class="highlight"> 0 </span>    <span class="highlight"> 0 </span>
+     4     2     2     1     1     1     1     1     1     8     2    <span class="highlight"> 0 </span>    4    <span class="highlight"> 0 </span>    <span class="highlight"> 0 </span>
+
+</pre>
+
+<p>The numbers in each of these columns (from top to bottom) are:
+	<ul>
+		<li>The start offset of the series in a block</li>
+		<li>The number of coefficients for each property</li>
+		<li>The number of subintervals</li>
+	</ul>
+<p>Not included here, but also important is the number of properties for each series.  This information you have to infer by the type of series.  Though you could compute
+	it by looking at where the next series starts (or for the last series, the length of a block).  Each planet has three properties (X, Y, and Z). Nutations have two
+	properties (dpsi, deps).  Librations have three (phi, theta, psi).  Mantel velocity has three (omega x, omega y, omega z).  And TT-TDB has just one.  This data is
+included in the table with names above.</p>
+
+ASCII Files
+-blocks
+--series
+--components
+--subintervals
+
+
+</body>
+</html>
