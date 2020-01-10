@@ -52,7 +52,7 @@ class DE405{
 
 	getEarthPositionFromEMB(emb,moon){
 		const earth=new Array();
-		for(let i=0;i<3;i++){
+		for(let i=0;i<6;i++){
 			earth[i]=emb[i]-moon[i]/(1+this.earthMoonRatio);
 		}
 		return earth;
@@ -91,9 +91,7 @@ class JPLSeries{
 			properties[i]=t[0];
 
 			let velocity = t[1];
-//console.log(`${velocity} ${this.numberOfSubIntervals} ${blockDuration}`);
 			velocity=velocity*(2.0*this.numberOfSubIntervals/blockDuration);
-
 			properties[i+this.numberOfProperties]=velocity;
 		}
 		return properties;

@@ -51,6 +51,7 @@ function get(series,jd,x){
 	} else {
 		b=de.getAllPropertiesForSeries(s,jd);
 	}
+	console.log(b);
 	return b[x-1];
 }
 
@@ -88,7 +89,6 @@ let tests=0;
 let fail=0;
 let skipped=0;
 
-//testpo(405,  2039, 5,1, 2465909.5, 10, 13,  2,       0.0019385302022);
 allTests();
 
 function allTests(){
