@@ -127,17 +127,15 @@ class JPLSeries{
 		//Compute velocity (just the derivitave of the above)
 		const v=new Array();
 		v[0]=0;
-		v[1]=0;
-		v[2]=1;
-		v[3]=4*x;
-		for(let n=4;n<=coefficients.length;n++){
-			v[n]=2*x*v[n-1]+2*t[n-2]-v[n-2];
+		v[1]=1;
+		v[2]=4*x;
+		for(let n=3;n<coefficients.length;n++){
+			v[n]=2*x*v[n-1]+2*t[n-1]-v[n-2];
 		}
 
 		let velocity=0;
-		//for(let i=coefficients.length-1;i>=0;i--){
-		for(let i=1; i<=coefficients.length;i++){
-			velocity+=v[i]*coefficients[i-1];
+		for(let i=coefficients.length-1;i>=0;i--){
+			velocity+=v[i]*coefficients[i];
 		}
 
 		let retval=new Array();
