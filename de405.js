@@ -89,7 +89,12 @@ class JPLSeries{
 			const offset=blockOffset+this.offset+i*this.numberOfCoefficients+subintervalSize*subintervalNumber;
 			let t=this.computePropertyForSeries(x,coefficients,offset);
 			properties[i]=t[0];
-			properties[i+this.numberOfProperties]=t[1];
+
+			let velocity = t[1];
+//console.log(`${velocity} ${this.numberOfSubIntervals} ${blockDuration}`);
+			velocity=velocity*(2.0*this.numberOfSubIntervals/blockDuration);
+
+			properties[i+this.numberOfProperties]=velocity;
 		}
 		return properties;
 	}
@@ -127,13 +132,14 @@ class JPLSeries{
 		v[1]=0;
 		v[2]=1;
 		v[3]=4*x;
-		for(let n=4;n<coefficients.length;n++){
-			v[n]=2*x*v[n-1]+2*t[n-1]-v[n-2];
+		for(let n=4;n<=coefficients.length;n++){
+			v[n]=2*x*v[n-1]+2*t[n-2]-v[n-2];
 		}
 
 		let velocity=0;
-		for(let i=coefficients.length-1;i>=0;i--){
-			velocity+=v[i]*coefficients[i];
+		//for(let i=coefficients.length-1;i>=0;i--){
+		for(let i=1; i<=coefficients.length;i++){
+			velocity+=v[i]*coefficients[i-1];
 		}
 
 		let retval=new Array();

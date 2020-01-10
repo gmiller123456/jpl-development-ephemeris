@@ -113,7 +113,7 @@ the "main" method, which contains the call to "planetary_ephemeris".
 		double[] ephemeris_rprime = new double[4];
 
 		testBody.get_planet_posvel(jultime,1,ephemeris_r,ephemeris_rprime);
-		System.out.println(ephemeris_r[1]);
+		System.out.println(ephemeris_rprime[1]);
 		return;
 
 
@@ -266,21 +266,20 @@ the "main" method, which contains the call to "planetary_ephemeris".
 
 		/*  Calculate the chebyshev time within the subinterval, between -1 and +1  */
 		chebyshev_time = 2*(jultime - ((subinterval - 1)*subinterval_duration + interval_start_time))/subinterval_duration - 1;
-System.out.printf("time: %f sub: %d dur: %f start: %f\r\n",chebyshev_time,subinterval,subinterval_duration,interval_start_time);
+//System.out.printf("time: %f sub: %d dur: %f start: %f\r\n",chebyshev_time,subinterval,subinterval_duration,interval_start_time);
 		/*  Calculate the Chebyshev position polynomials   */
 		position_poly[1] = 1;
 		position_poly[2] = chebyshev_time;
 		for (j=3;j<=number_of_coefs[i];j++){
 			position_poly[j] = 2*chebyshev_time* position_poly[j-1] - position_poly[j-2];
-System.out.printf("%f,",position_poly[j]);
 		}
-System.out.println();
+//System.out.println();
 		/*  Calculate the position of the i'th planet at jultime  */
 		for (j=1;j<=3;j++) {
 			ephemeris_r[j] = 0;
 			for (k=1;k<=number_of_coefs[i];k++){
 				ephemeris_r[j] = ephemeris_r[j] + coef[j][k]*position_poly[k];
-System.out.printf("Pos %f\r\n",ephemeris_r[j]);
+//System.out.printf("Pos %f\r\n",ephemeris_r[j]);
 			}
 			/*  Convert from km to A.U.  */
 			//ephemeris_r[j] = ephemeris_r[j]/au;
@@ -290,19 +289,22 @@ System.out.printf("Pos %f\r\n",ephemeris_r[j]);
 		velocity_poly[1] = 0;
 		velocity_poly[2] = 1;
 		velocity_poly[3] = 4*chebyshev_time;
-		for (j=4;j<=number_of_coefs[i];j++)
+		for (j=4;j<=number_of_coefs[i];j++){
 			velocity_poly[j] = 2*chebyshev_time*velocity_poly[j-1] + 2*position_poly[j-1] - velocity_poly[j-2];
+		}
 
 		/*  Calculate the velocity of the i'th planet  */
 		for (j=1;j<=3;j++) {
 			ephemeris_rprime[j] = 0;
-			for (k=1;k<=number_of_coefs[i];k++)
+			for (k=1;k<=number_of_coefs[i];k++){
 				ephemeris_rprime[j] = ephemeris_rprime[j] + coef[j][k]*velocity_poly[k];
+			}
+System.out.printf("%f %d %d\r\n",ephemeris_rprime[j],number_of_coef_sets[i],interval_duration);			
 			/*  The next line accounts for differentiation of the iterative formula with respect to chebyshev time.  Essentially, if dx/dt = (dx/dct) times (dct/dt), the next line includes the factor (dct/dt) so that the units are km/day  */
 			ephemeris_rprime[j] = ephemeris_rprime[j]*(2.0*number_of_coef_sets[i]/interval_duration);
 
 			/*  Convert from km to A.U.  */
-			ephemeris_rprime[j] = ephemeris_rprime[j]/au;
+			//ephemeris_rprime[j] = ephemeris_rprime[j]/au;
 
 			}
 
