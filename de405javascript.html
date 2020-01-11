@@ -1,15 +1,69 @@
 <html>
 <head>
+	<title>JavaScript JPL Ephemeris Calculator</title>
 </head>
 <body>
+<h1>JavaScript JPL Ephemeris Calculator</h1>
 <script src="ascp2020.405.js"></script>
 <script src="de405.js"></script>
+
+<p>This is an example of how to implement a Ephemeris Calculator for the JPL Ephemeris.  The main part of the code is in <a href='de405.js'>de405.js</a>.  This
+implementation is for DE405, and I have included data only for Julian Dates 2458832.5 to 2466160.5 (Dec 15, 2019 to Jan 7, 2040).  I also have a page of
+<a href="de405testpo.html">Test Positions</a> for the test data provided by the JPL for that date range.
+
+<form>
+Julian Date:<input id='jdInput' type=text value=2458850.5><input type=button value="Compute" onclick='computeValues();'><br>
+<table id='dataTable' border=1 cellspacing=0>
+<tr><th>Planet</th><th>X km</th><th>dX km/day</th><th>Y km</th><th>dY km/day</th><th>Z km</th><th>dZ km/day</th></tr>
+<tr><td>Mercury</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Venus</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>EMB</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Mars</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Jupiter</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Saturn</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Uranus</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Neptune</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Pluto</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Moon</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Sun</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Nutations</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Librations</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Mantel Vel</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>TT-TDB</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+
 <script>
 
-let de=new DE405();
-console.log(de.getAllPropertiesForSeries(0,2458832.5));
-//console.log(de.getAllPropertiesForSeries(0,2458840.5));
-//console.log(de.getAllPropertiesForSeries(0,2458864.5));
+computeValues();
+
+function computeValues(){
+	const jd=document.getElementById('jdInput').value;
+	for(let i=0;i<13;i++){
+		displaySeries(i,jd);
+	}
+}
+
+function displaySeries(series,jd){
+	let de=new DE405();
+	
+	const d=de.getAllPropertiesForSeries(series,jd);
+	const t=document.getElementById('dataTable');
+	t.rows[series+1].cells[1].innerHTML=d[0];
+	t.rows[series+1].cells[2].innerHTML=d[3];
+	t.rows[series+1].cells[3].innerHTML=d[1];
+	t.rows[series+1].cells[4].innerHTML=d[4];
+	t.rows[series+1].cells[5].innerHTML=d[2];
+	t.rows[series+1].cells[6].innerHTML=d[5];
+
+	if(series==11){
+		t.rows[series+1].cells[4].innerHTML="";		
+		t.rows[series+1].cells[6].innerHTML="";		
+	}
+
+}
 </script>
+
+
+
 </body>
 </html>

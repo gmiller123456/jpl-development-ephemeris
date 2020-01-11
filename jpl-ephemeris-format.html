@@ -1,14 +1,43 @@
 <html>
 <head>
 <style>
-	body {margin-left: 20%; margin-right: 20%;}
+	body {
+		font-size: .75em;
+		line-height: 1.6;
+	}
+	pre {font-size: 1.75em;}
+
 	.highlight {background: #aaaadd;}
+	.headertext {background: #F0F0F0;}
+
+	.formatlevel1 {background: #f0f0f0; border-style:solid; border-width: 1px;}
+	.formatlevel2 {background: #eeeeee; border-style:solid; border-width: 1px;}
+	.formatlevel3 {background: #cccccc; border-style:solid; border-width: 1px;}
+	.formatlevel4 {background: #aaaaaa; border-style:solid; border-width: 1px;}
+
+	@media screen and (min-width: 1000px) {
+	  body {
+	  	margin-left: 20%;
+	  	margin-right: 20%;
+	  	font-size: 1em;
+	  }
+	  pre {font-size: 1em;}
+	}
+
 </style>
+<link rel="stylesheet" href="highlight/styles/default.css">
 <Title>Format of the JPL Ephemeris Files</Title>
 </head>
 <body>
+<script src="highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
 <h1>Format of the JPL Ephemeris Files</h1>
+Greg Miller (gmiller@gregmiller.net) 2019<br>
+All code in this article is public domain
 <h2>Overview</h2>
+
+<p>I have implemented an <a href="de405javascript.html">example</a> implementation based on the description below to show how everything fits together.</p>
 
 <p>The JPL Development Ephemeris provide high quality, accurate data on the positions of the planets, the moon, and sometimes a few other variables.  Writing software to
 use the JPL files is not difficult.  Unfortunately the documentation is pretty lacking, scattered, and mostly relies on reading the source code of reference implementations.
@@ -19,7 +48,7 @@ for programmers to follow who might not be as informed on astronomy.</p>
 <p>If you've looked at some of the implementations provided by NASA, or the <a href="https://www.projectpluto.com/jpl_eph.htm">Project Pluto</a> implementations, it might look like
 it's an impossibly hard task to grapple.  But the reality is that these are optimised implementations, designed to work with multiple ephemeris versions, and are written in
 pretty old languages that lack features that make code easier to understand (even if they run slower).  In reality, in most of these implementations, only about 10-30 lines of
-code actual deal with calculating the position (or velocity) of the planets.  Most of the rest of the code is dealing with edge cases for dealing with multiple versions,
+code actualy deal with calculating the position (or velocity) of the planets.  Most of the rest of the code is dealing with edge cases for dealing with multiple versions,
 memory management, and finding the right coefficients to finally pass to the computation function.</p>
 
 <p>If you're willing to forego the flexibility of being able to process ephemeris files you've never seen before, then writing a program to compute all of the series in a JPL
@@ -45,7 +74,7 @@ Android will let you run C, but providing binaries for every type of device is p
 Have a look at the <a href="header.405">DE 405 header file</a>.  Most of the data you see here will not be used by us, we're primarily interested in only a few key parts
 highlighted and explained below.
 
-<pre style="border:solid; font-size: 10;">
+<pre class='headertext'>
 KSIZE=  2036    NCOEFF=  <span class="highlight">1018</span>
  
 GROUP   1010
@@ -122,21 +151,21 @@ block is only good for a set number of days.  You'll use this later to compute a
 
 <h3>GROUP 1050</h3>
 <p>This is the most complicated part of the data, and will be explained in more detail when we actually look at the data files.  But the short version is that each column here
-represents a planet (or some other data element).  The oder is consistent across all of the ephemeris versions.  The order is:
-Table 1.  List of Series order in the JPL Files:
+represents a planet (or some other data element).  The oder is consistent across all of the ephemeris versions.  The order is:</p>
+<p>Table 1.  List of Series order in the JPL Files:</p>
 <table border=1 cellspacing=0>
 <tr><th></th><th># Properties</th><th>Units</th><th>Center</th><th>Name</th></tr>
-<tr><td>1</td><td>3</td><td>KM</td><td>SSB</td><td>Mercury</td></tr>
-<tr><td>2</td><td>3</td><td>KM</td><td>SSB</td><td>Venus</td></tr>
-<tr><td>3</td><td>3</td><td>KM</td><td>SSB</td><td>Earth-Moon barycenter</td></tr>
-<tr><td>4</td><td>3</td><td>KM</td><td>SSB</td><td>Mars </td></tr>
-<tr><td>5</td><td>3</td><td>KM</td><td>SSB</td><td>Jupiter </td></tr>
-<tr><td>6</td><td>3</td><td>KM</td><td>SSB</td><td>Saturn</td></tr>
-<tr><td>7</td><td>3</td><td>KM</td><td>SSB</td><td>Uranus</td></tr>
-<tr><td>8</td><td>3</td><td>KM</td><td>SSB</td><td>Neptune</td></tr>
-<tr><td>9</td><td>3</td><td>KM</td><td>SSB</td><td>Pluto</td></tr>
-<tr><td>10</td><td>3</td><td>KM</td><td>Earth</td><td>Moon (geocentric)</td></tr>
-<tr><td>11</td><td>3</td><td>KM</td><td>SSB</td><td>Sun</td></tr>
+<tr ><td>1</td><td>3</td><td>km</td><td>SSB</td><td>Mercury</td></tr>
+<tr><td>2</td><td>3</td><td>km</td><td>SSB</td><td>Venus</td></tr>
+<tr><td>3</td><td>3</td><td>km</td><td>SSB</td><td>Earth-Moon barycenter</td></tr>
+<tr><td>4</td><td>3</td><td>km</td><td>SSB</td><td>Mars </td></tr>
+<tr><td>5</td><td>3</td><td>km</td><td>SSB</td><td>Jupiter </td></tr>
+<tr><td>6</td><td>3</td><td>km</td><td>SSB</td><td>Saturn</td></tr>
+<tr><td>7</td><td>3</td><td>km</td><td>SSB</td><td>Uranus</td></tr>
+<tr><td>8</td><td>3</td><td>km</td><td>SSB</td><td>Neptune</td></tr>
+<tr><td>9</td><td>3</td><td>km</td><td>SSB</td><td>Pluto</td></tr>
+<tr><td>10</td><td>3</td><td>km</td><td>Earth</td><td>Moon (geocentric)</td></tr>
+<tr><td>11</td><td>3</td><td>km</td><td>SSB</td><td>Sun</td></tr>
 <tr><td>12</td><td>2</td><td>radians</td><td> </td><td>Earth Nutations in longitude and obliquity (IAU 1980 model)</td></tr>
 <tr><td>13</td><td>3</td><td>radians</td><td> </td><td>Lunar mantle libration</td></tr>
 <tr><td>14</td><td>3</td><td>radians/day</td><td> </td><td>Lunar mantle angular velocity</td></tr>
@@ -152,7 +181,7 @@ note that the numbers are pretty much the same between DE405 and DE432.</p>
 
 
 <b>DE 432 header</b>
-<pre style="border:solid">
+<pre class='headertext'>
 GROUP   1050
  
      3   171   231   309   342   366   387   405   423   441   753   819   819   939   939
@@ -170,154 +199,272 @@ GROUP   1050
 <p>Not included here, but also important is the number of properties for each series.  This information you have to infer by the type of series.  Though you could compute
 	it by looking at where the next series starts (or for the last series, the length of a block).  Each planet has three properties (X, Y, and Z). Nutations have two
 	properties (dpsi, deps).  Librations have three (phi, theta, psi).  Mantel velocity has three (omega x, omega y, omega z).  And TT-TDB has just one.  This data is
-included in the table with names above.</p>
+included in Table 1 above.</p>
 
 <h3>What About the Earth?!?</h3>
 If you were paying attention, you'd have noticed that there's no data for computing the position of the Earth.  Instead we get data for both the Earth-Moon Barycenter, and
 a geocentric position for the Moon.  But, using those two quantities, we can compute the position of the Earth:</p>
-<pre style="border:solid">
-<b>Earth=EMB-Moon/(1+earthMoonMassRatio)</b>
-</pre>
+<pre><code class="JavaScript">
+<b>Earth = EMB - Moon / ( 1 + earthMoonMassRatio )</b>
+</code></pre>
 <p>  So, anytime you need
 tht position of the Earth, you must first compute the EMB and Moon positions, then use those positions in the equation above.  The earthMoonMassRatio
-value comes from the header file, and is highlighted above (0.813005600000000044D+02).
-
+value comes from the header file, and is highlighted above (0.813005600000000044D+02).</p>
 
 <h2>ASCII Files</h2>
 
-JPL provides ASCII versions of the ephemeris files, and binary versions of some of them, some in little-endian and some in big-endian format.  For
+<p>JPL provides ASCII versions of the ephemeris files, and binary versions of some of them, some in little-endian and some in big-endian format.  For
 the purposes of this article I will deal only with the ASCII format.  The binary format is pretty similar once you get past the header.  As I said
 above, one of the biggest advantages to writing your own ephemeris generator is that you're not locked in to using the JPL formatted files.  Converting
 them to binary can speed up processing significantly, and if that's important to your application, you can probably come up with a more appropriate
-binary format than the JPL version.  For that reason, I won't go into the binary format any further.
+binary format than the JPL version.  For that reason, I won't go into the binary format any further.</p>
+
+<p>The general format of the ASCII files, using DE405 as an example, is as follows</p>
+<ul class="formatlevel1">
+	<li>Block</li>
+	<ul class="formatlevel2">
+		<li class="formatlevel3">Header Start Date - 1 Double</li>
+		<li class="formatlevel3">Header End Date - 1 Double</li>
+		<li>Mercury Series: Offset 3</li>
+		<ul class="formatlevel3">
+			<li>Mercury Subinterval 1</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 14 Doubles</li>
+				<li>Y Coefficients - 14 Doubles</li>
+				<li>Z Coefficients - 14 Doubles</li>
+			</ul>
+			<li>Mercury Subinterval 2</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 14 Doubles</li>
+				<li>Y Coefficients - 14 Doubles</li>
+				<li>Z Coefficients - 14 Doubles</li>
+			</ul>
+			<li>Mercury Subinterval 3</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 14 Doubles</li>
+				<li>Y Coefficients - 14 Doubles</li>
+				<li>Z Coefficients - 14 Doubles</li>
+			</ul>
+			<li>Mercury Subinterval 4</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 14 Doubles</li>
+				<li>Y Coefficients - 14 Doubles</li>
+				<li>Z Coefficients - 14 Doubles</li>
+			</ul>
+		</ul>
+		<li>Venus Series: Offset 171</li>
+		<ul class="formatlevel3">
+			<li>Venus Subinterval 1</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 10 Doubles</li>
+				<li>Y Coefficients - 10 Doubles</li>
+				<li>Z Coefficients - 10 Doubles</li>
+			</ul>
+			<li>Venus Subinterval 2</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 10 Doubles</li>
+				<li>Y Coefficients - 10 Doubles</li>
+				<li>Z Coefficients - 10 Doubles</li>
+			</ul>
+		</ul>
+		<li>Earth-Moon Barycenter Series: Offset 231</li>
+		<ul class="formatlevel3">
+			<li>EMB Subinterval 1</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 13 Doubles</li>
+				<li>Y Coefficients - 13 Doubles</li>
+				<li>Z Coefficients - 13 Doubles</li>
+			</ul>
+			<li>EMB Subinterval 2</li>
+			<ul class="formatlevel4">
+				<li>X Coefficients - 13 Doubles</li>
+				<li>Y Coefficients - 13 Doubles</li>
+				<li>Z Coefficients - 13 Doubles</li>
+			</ul>
+		</ul>
+		<li> . . . . . . .</li>
+		<li> . . . . . . .</li>
+		<li>And So On</li>
+		<li> . . . . . . .</li>
+		<li> . . . . . . .</li>
+		<li>Lunar mantle libration: Offset 899</li>
+		<ul class="formatlevel3">
+			<li>Libration Subinterval 1</li>
+			<ul class="formatlevel4">
+				<li>Phi &Phi; Coefficients - 10 Doubles</li>
+				<li>Theta &theta; Coefficients - 10 Doubles</li>
+				<li>Psi &psi; Coefficients - 10 Doubles</li>
+			</ul>
+			<li>Libration Subinterval 2</li>
+			<ul class="formatlevel4">
+				<li>Phi &Phi; Coefficients - 10 Doubles</li>
+				<li>Theta &theta; Coefficients - 10 Doubles</li>
+				<li>Psi &psi; Coefficients - 10 Doubles</li>
+			</ul>
+			<li>Libration Subinterval 3</li>
+			<ul class="formatlevel4">
+				<li>Phi &Phi; Coefficients - 10 Doubles</li>
+				<li>Theta &theta; Coefficients - 10 Doubles</li>
+				<li>Psi &psi; Coefficients - 10 Doubles</li>
+			</ul>
+			<li>Libration Subinterval 4</li>
+			<ul class="formatlevel4">
+				<li>Phi &Phi; Coefficients - 10 Doubles</li>
+				<li>Theta &theta; Coefficients - 10 Doubles</li>
+				<li>Psi &psi; Coefficients - 10 Doubles</li>
+			</ul>
+		</ul>
+	</ul>
+</ul>
 
 <h3>Files</h3>
-Each ephemeris version has files named slightly differently, mostly based on how many years of data each file contains.  The basic format of
-the filename is:
+<p>Each ephemeris version has files named slightly differently, mostly based on how many years of data each file contains.  The basic format of
+the filename is:</p>
+<pre><code class="JavaScript">
 ASC[P/M][Year].[Version]
+</code></pre>
+<p>Where [P/M] stand for "plus" or "minus".  It is "M" for negative years in the Gregorian Calendar, and "P" otherwise.  [Year] is the first year the
+file has data for.  And [Version] is the version of the ephemeris it was generated for.</p>
 
-Where [P/M] stand for "plus" or "minus".  It is "M" for negative years in the Gregorian Calendar, and "P" otherwise.  [Year] is the first year the
-file has data for.  And [Version] is the version of the ephemeris it was generated for.
+<p>The numbers in the files are formatted as exponentials, with a D denoting the exponent.  You will need to replace this D with an E in order for it
+to parse correctly in most programming languages.</p>
 
-The numbers in the files are formatted as exponentials, with a D denoting the exponent.  You will need to replace this D with an E in order for it
-to parse correctly in most programming languages.
-
-<h3>Blocks<h3>
-If you open up the <a href="ascp2020.405">ascp2020.405</a> file as an example.  The first thing you'll notice is that it's broken up into blocks,
+<h3>Blocks</h3>
+<p>If you open up the <a href="ascp2020.405">ascp2020.405</a> file as an example.  The first thing you'll notice is that it's broken up into blocks,
 with each block starting with two integers on a line, followed by a list of floating point numbers.  The two integers are the block number, and
 the number of coefficients the block contains.  The number of coefficients, is the same as NCOEFF from the header file.  And remember that
 the number of coefficients isn't always equal to the actual count of numbers.  For example the DE405 blocks are always padded with two zeros, so there
 are actually 1020 numbers in each block.  Other ephemeris versions will have different padding standards.
 
 <h3>Valid dates</h3>
-The first two numbers of each block (for every ephemeris version) are the Julian Days for which the block is valid.  For example, the first block in the
+<p>The first two numbers of each block (for every ephemeris version) are the Julian Days for which the block is valid.  For example, the first block in the
 ascp2020.405 file is valid from 2458832.5 to 2458864.5.
 
 <h3>Series</h3>
-The not-so obvious breakdown of the coefficients starts here.  This is where you need the data from "GROUP 1050" given in the header file, as well
+<p>The not-so obvious breakdown of the coefficients starts here.  This is where you need the data from "GROUP 1050" given in the header file, as well
 as the knowledge of how many components each series has (given in Table 1 above).  Using Mercury as an example, it has a starting offset of "3" (line 1 of GROUP 1050), so
 its coefficients start with -0.468225142464447618D+08.
 
 <h3>Components</h3>
-Line 2 of GROUP 1050 shows how many coefficients each component has, for Mercury that's 14.  We know from Table 1 that Mercury has three components: X, Y and Z.
+<p>Line 2 of GROUP 1050 shows how many coefficients each component has, for Mercury that's 14.  We know from Table 1 that Mercury has three components: X, Y and Z.</p>
 
-Using the first block of ascp2020.405 as an example, for the first subinterval (explained in the next section) the Mercury's coefficients for X, Y, and Z are:
+<p>Using the first block of ascp2020.405 as an example, for the first subinterval (explained in the next section) the Mercury's coefficients for X, Y, and Z are:</p>
 
-X:-0.468225142464447618D+08  0.855287673857185431D+07  0.612484375662173959D+06 -0.271197032404459242D+05  
+<p>X:-0.468225142464447618D+08  0.855287673857185431D+07  0.612484375662173959D+06 -0.271197032404459242D+05  
   0.175867546549079435D+03 -0.162623577504849326D+01 -0.763823621681322784D+00  0.441800821623631670D-01 -0.225469494234295390D-02  0.850807253766397409D-04  
- -0.218587309569990039D-05  0.850227664778876227D-09  0.490853028896027249D-08 -0.398938554977480726D-09
+ -0.218587309569990039D-05  0.850227664778876227D-09  0.490853028896027249D-08 -0.398938554977480726D-09</p>
 
-Y: -0.427358720430963337D+08 -0.935967597832447290D+07  
+<p>Y: -0.427358720430963337D+08 -0.935967597832447290D+07  
   0.576081445763668744D+06  0.126923156433521799D+05 -0.614832892580008775D+03  0.253491067956385763D+02 -0.982133401189059008D+00  0.199660889047113960D-01  
- -0.651480991977301560D-04 -0.458218756391133968D-04  0.341552453779017768D-05 -0.189986098666370616D-06  0.790647061064605362D-08 -0.238712559861458182D-09
+ -0.651480991977301560D-04 -0.458218756391133968D-04  0.341552453779017768D-05 -0.189986098666370616D-06  0.790647061064605362D-08 -0.238712559861458182D-09</p>
 
-Z: -0.181325881156450957D+08 -0.588670663881796692D+07  0.244250146726330160D+06  0.959132849803752833D+04 -0.346669478216073912D+03  0.137098683499955740D+02  
+<p>Z: -0.181325881156450957D+08 -0.588670663881796692D+07  0.244250146726330160D+06  0.959132849803752833D+04 -0.346669478216073912D+03  0.137098683499955740D+02  
  -0.445471694283314124D+00  0.608610133598603501D-02  0.198916433185458984D-03 -0.332970361189953508D-04  0.205113183990416121D-05 -0.101577300506667819D-06  
-  0.371477546608301747D-08 -0.861673297708620472D-10
+  0.371477546608301747D-08 -0.861673297708620472D-10</p>
 
 <h3>Subintervals</h3>
-Line 3 of GROUP 1050 is the number of subintervals a series has in each block.  As explained in the "Valid Dates" section, each block has data for only
+<p>Line 3 of GROUP 1050 is the number of subintervals a series has in each block.  As explained in the "Valid Dates" section, each block has data for only
 a specific period of time (usually 32 days).  Some of the planets, like Mercury, have to be divided into even smaller sections.  We see that from line
 3, in the first colum of GROUP 1050, that Mercury is divided into 4 subintervals.  This means that all of the coefficients for all of the components are
-included 4 times, each set valid only for 1/4th the interval in which the entire block is valid for.
+included 4 times, each set valid only for 1/4th the interval in which the entire block is valid for.</p>
 
-Using Mercury and the first block of ascp2020.405 as an example.  It has 4 subintervals, the block is valid for 32 days, so each subinterval for
+<p>Using Mercury and the first block of ascp2020.405 as an example.  It has 4 subintervals, the block is valid for 32 days, so each subinterval for
 Mercury is valid for 8 days.  So, 2458832.5 is the start of the first subinterval, and 2458840.5 is the start of the second subinterval, and so on.  So,
 if we were asked to compute the position of Mercury on JD=2458850.5, we would see that date falls in the third subinterval (subinterval 2 if counting the
-first as 0).  We would then compute:
+first as 0).  We would then compute:</p>
 
-subinterval=floor( (JD-blockStartDate)/lengthOfSubinterval )
-subinterval=floor( (2458850.5 - 2458832.5)/8)
-subinterval=floor( 2.25 )
-subinterval=2
+<pre><code class="JavaScript">
+lengthOfSubinterval = daysPerBlock / numberOfSubintervals
+lengthOfSubinterval = 32 / 4 = 8
 
-offset=subinterval*numberOfCoefficients*numberOfProperties+seriesStartOffset
+subinterval = floor( (JD-blockStartDate)/lengthOfSubinterval )
+subinterval = floor( (2458850.5 - 2458832.5)/8)
+subinterval = floor( 2.25 )
+subinterval = 2;
+
+offset=subinterval*numberOfCoefficients*numberOfProperties+seriesStartOffset;
 offset=2 * 14 * 3 + 3 = 87
+</code></pre>
 
-So we would start with the 87th number in the list of floats, and take the X, Y, and Z coefficients from there.  Remember that if you're using arrays,
-most languages start indexes with 0, so the 87th number is array index 86.
+<p>So we would start with the 87th number in the list of floats, and take the X, Y, and Z coefficients from there.  Remember that if you're using arrays,
+most languages start indexes with 0, so the 87th number is array index 86.</p>
 
-X: 0.230446411715880504D+04  0.133726736662702635D+08 -0.782187090879053358D+04 -0.267678745522568279D+05  
+<p>X: 0.230446411715880504D+04  0.133726736662702635D+08 -0.782187090879053358D+04 -0.267678745522568279D+05  
  -0.227070698075548364D+03 -0.142012340261296774D+02 -0.924872006275108544D-01  0.431659104815666252D-02  0.356917634561652571D-03  0.302564651657819373D-04  
-  0.980701702776103911D-06  0.505819702568259545D-07  0.113034198242195379D-08  0.323800745882515925D-10
+  0.980701702776103911D-06  0.505819702568259545D-07  0.113034198242195379D-08  0.323800745882515925D-10</p>
 
-Y:  -0.593914454531169161D+08  0.138391312173493067D+07  
+<p>Y:  -0.593914454531169161D+08  0.138391312173493067D+07  
   0.725419090211108793D+06  0.139471465250126903D+04 -0.290917422263861397D+03 -0.635064566332839320D+01 -0.646844700926034299D+00 -0.120797394835047579D-01  
- -0.681164244772722110D-03 -0.783160742259704191D-05 -0.953933699143903451D-07  0.170514411319974421D-07  0.132846579503924915D-08  0.625629348278007546D-10
+ -0.681164244772722110D-03 -0.783160742259704191D-05 -0.953933699143903451D-07  0.170514411319974421D-07  0.132846579503924915D-08  0.625629348278007546D-10</p>
 
-Z: -0.318846685234071501D+08 -0.647159726192409638D+06  0.388325111500594590D+06  0.351975238047553557D+04 -0.131868705094903135D+03 -0.192040059987689204D+01  
+<p>Z: -0.318846685234071501D+08 -0.647159726192409638D+06  0.388325111500594590D+06  0.351975238047553557D+04 -0.131868705094903135D+03 -0.192040059987689204D+01  
  -0.335952534459033059D+00 -0.690035617434751804D-02 -0.400870301836372738D-03 -0.731991272299537233D-05 -0.152615685994738755D-06  0.386553675297770635D-08  
-  0.592487943320094233D-09  0.300642066655273442D-10
+  0.592487943320094233D-09  0.300642066655273442D-10</p>
 
 <h2>Computing the Chebyshev Polynomial</h2>
 
-All that work just to find a handful of numbers we want to multiply against.  The good news is the JPL has already done all of the hard work from
+<p>All that work just to find a handful of numbers we want to multiply against.  The good news is the JPL has already done all of the hard work from
 here, there's just a couple of more steps to get the position.
 
 <h3>Normalize the Julian Date to the Range -1 to +1</h3>
 
-The Chebyshev polynomials don't use Julian Days for computation, instead they require a number from -1 to +1.  -1 would represent the time of the beginning
+<p>The Chebyshev polynomials don't use Julian Days for computation, instead they require a number from -1 to +1.  -1 would represent the time of the beginning
 of a subinterval, and +1 represents the end.  So we have to scale our Julian Day based on the start and end times of the subinterval.  It's important to
 remember to use the times for which the <b>subinterval</b> is valid, not the entire block.  So we must first compute the valid range for the subinterval.
-Using the example of Mercury and JD=2458850.5 from above.
+Using the example of Mercury and JD=2458850.5 from above.</p>
 
+<pre><code class="JavaScript">
 validStart= blockStart + subinterval * lengthOfSubinterval = 2458848.5
 validEnd= validStart + lengthOfSubinterval = 2458856.5
-
-In order to preserve maximum accuracy of the floating point JD, it is necessary to subtract off the validStart before normalization:
-
+</code></pre>
+<p>In order to preserve maximum accuracy of the floating point JD, it is necessary to subtract off the validStart before normalization:</p>
+<pre><code class="JavaScript">
 temp = JD - validStart
 temp = 2458850.5 - 2458848.5 = 2.0
-
-You may have noticed that many programs use a two part JD in order to increase the accuracy of the JD.  In all previous instances where we used the JD,
-you can just add the two parts together without loss of accuracy.  It is here at this step where in makes a difference.
-
+</code></pre>
+<p>You may have noticed that many programs use a two part JD in order to increase the accuracy of the JD.  In all previous instances where we used the JD,
+you can just add the two parts together without loss of accuracy.  It is here at this step where in makes a difference.</p>
+<pre><code class="JavaScript">
 [alternate two part JD method]
 temp = JDpart1 - validStart + JDpart2
-
-Now compute the normalized time variable which will be used in the Chebyshev polynomial:
-
+</code></pre>
+<p>Now compute the normalized time variable which will be used in the Chebyshev polynomial:</p>
+<pre><code class="JavaScript">
 x = temp / lengthOfSubinterval * 2.0 - 1.0
 x = 2.0 / 8.0 * 2.0 - 1.0
 x = -0.5
-
+</code></pre>
 <h3>Computing the Position</h3>
 
-Computing the Chebyshev polynomial involves expanding the polynomial using the algorithm below.  This is equation 14.20 from the Explanatory Supplement to
-the Astronomical Almanac, or alternatively presented on the <a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia Page</a>:
+<p>Computing the Chebyshev polynomial involves expanding the polynomial using the algorithm below.  This is equation 14.20 from the Explanatory Supplement to
+the Astronomical Almanac, or alternatively presented on the <a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia Page</a>:</p>
 
-<pre>
+<pre><code class="JavaScript">
 T(0) = 1
 T(1) = x
 T(n) = 2 * x * T(n-1) - T(n-2)
-</pre>
+</code></pre>
 
-Where n is the number of coefficients for the property we're computing.
+<p>Where n is the number of coefficients for the property we're computing.</p>
 
-Continuing our example of computing the position of Mercury for JD=2458850.5.  We have x = -0.5 from above, and 14 coefficients, so n = 14.  Note
-we're using array indexes starting at 0, so n will actually stop at 13.
+<p>Continuing our example of computing the position of Mercury for JD=2458850.5.  We have x = -0.5 from above, and 14 coefficients, so n = 14.  Note
+we're using array indexes starting at 0, so n will actually stop at 13.</p>
 
-<pre id='expandedPolynomial'>
+<pre id='expandedPolynomial' class="headertext">
+T(0) = 1
+T(1) = -0.5
+T(2) = 2 * -0.5 * -0.5 - 1
+T(3) = 2 * -0.5 * -0.5 - -0.5
+T(4) = 2 * -0.5 * 1 - -0.5
+T(5) = 2 * -0.5 * -0.5 - 1
+T(6) = 2 * -0.5 * -0.5 - -0.5
+T(7) = 2 * -0.5 * 1 - -0.5
+T(8) = 2 * -0.5 * -0.5 - 1
+T(9) = 2 * -0.5 * -0.5 - -0.5
+T(10) = 2 * -0.5 * 1 - -0.5
+T(11) = 2 * -0.5 * -0.5 - 1
+T(12) = 2 * -0.5 * -0.5 - -0.5
+T(13) = 2 * -0.5 * 1 - -0.5
 </pre>
 <script>
 function expandPolynomial(){
@@ -333,19 +480,275 @@ function expandPolynomial(){
   }
   document.getElementById('expandedPolynomial').innerHTML=temp;
 }
-expandPolynomial();
 </script>
 
+<p>Now it's a simple matter of multiplying each coefficient by it's t[n] counterpart and summing them together. We loop through the coefficients in reverse order 
+(from smallest to largest) to avoid rounding errors.  The end routine that does all of the work is simply (in JavaScript):</p>
 
+<pre><code class="JavaScript">
+function computePolynomial(x,coefficients){
+  let T=new Array();
 
+  T[0]=1;
+  T[1]=x;
+  for(let n=2;n<14;n++)  {
+    T[n]=2*x*T[n-1] - T[n-2];
+  }
 
+  let v=0;
+  for(let i=coefficients.length-1;i>=0;i--){
+  	v+=T[i]*coefficients[i];
+  }
+  return v;
+}	
+</code></pre>
 
+<p>A function which calls that routine with our example data is:</p>
 
+<pre><code class="JavaScript">
+function computeExamplePolynomials(){	
+    let X=[0.230446411715880504E+04,  0.133726736662702635E+08, -0.782187090879053358E+04, -0.267678745522568279E+05,  
+           -0.227070698075548364E+03, -0.142012340261296774E+02, -0.924872006275108544E-01,  0.431659104815666252E-02,
+            0.356917634561652571E-03,  0.302564651657819373E-04, 0.980701702776103911E-06,  0.505819702568259545E-07,
+            0.113034198242195379E-08,  0.323800745882515925E-10];
 
+    let Y=[-0.593914454531169161E+08,  0.138391312173493067E+07, 0.725419090211108793E+06,  0.139471465250126903E+04,
+           -0.290917422263861397E+03, -0.635064566332839320E+01, -0.646844700926034299E+00, -0.120797394835047579E-01, 
+           -0.681164244772722110E-03, -0.783160742259704191E-05, -0.953933699143903451E-07,  0.170514411319974421E-07,
+            0.132846579503924915E-08,  0.625629348278007546E-10];
 
+    let Z=[-0.318846685234071501E+08, -0.647159726192409638E+06,  0.388325111500594590E+06,  0.351975238047553557E+04,
+           -0.131868705094903135E+03, -0.192040059987689204E+01, -0.335952534459033059E+00, -0.690035617434751804E-02,
+           -0.400870301836372738E-03, -0.731991272299537233E-05, -0.152615685994738755E-06,  0.386553675297770635E-08,  
+            0.592487943320094233E-09,  0.300642066655273442E-10];
 
+	let x=-0.5;
+	console.log(computePolynomial(x,X));
+	console.log(computePolynomial(x,Y));
+	console.log(computePolynomial(x,Z));
+}
+</code></pre>
 
+<script>
+computeExamplePolynomials();
 
+function computeExamplePolynomials(){	
+    let X=[0.230446411715880504E+04,  0.133726736662702635E+08, -0.782187090879053358E+04, -0.267678745522568279E+05,  
+           -0.227070698075548364E+03, -0.142012340261296774E+02, -0.924872006275108544E-01,  0.431659104815666252E-02,
+            0.356917634561652571E-03,  0.302564651657819373E-04, 0.980701702776103911E-06,  0.505819702568259545E-07,
+            0.113034198242195379E-08,  0.323800745882515925E-10];
 
+    let Y=[-0.593914454531169161E+08,  0.138391312173493067E+07, 0.725419090211108793E+06,  0.139471465250126903E+04,
+           -0.290917422263861397E+03, -0.635064566332839320E+01, -0.646844700926034299E+00, -0.120797394835047579E-01, 
+           -0.681164244772722110E-03, -0.783160742259704191E-05, -0.953933699143903451E-07,  0.170514411319974421E-07,
+            0.132846579503924915E-08,  0.625629348278007546E-10];
+
+    let Z=[-0.318846685234071501E+08, -0.647159726192409638E+06,  0.388325111500594590E+06,  0.351975238047553557E+04,
+           -0.131868705094903135E+03, -0.192040059987689204E+01, -0.335952534459033059E+00, -0.690035617434751804E-02,
+           -0.400870301836372738E-03, -0.731991272299537233E-05, -0.152615685994738755E-06,  0.386553675297770635E-08,  
+            0.592487943320094233E-09,  0.300642066655273442E-10];
+
+	let x=-0.5;
+	console.log(computePolynomial(x,X));
+	console.log(computePolynomial(x,Y));
+	console.log(computePolynomial(x,Z));
+}
+
+function computePolynomial(x,coefficients){
+  let T=new Array();
+
+  T[0]=1;
+  T[1]=x;
+  for(let n=2;n<14;n++)  {
+    T[n]=2*x*T[n-1] - T[n-2];
+  }
+
+  let v=0;
+  for(let i=coefficients.length-1;i>=0;i--){
+  	v+=T[i]*coefficients[i];
+  }
+  return v;
+}	
+</script>
+
+<p>And the final output for our example:</p>
+<pre><code class="JavaScript">
+X = -6706768.766943997 km
+Y = -60444568.85087551 km
+Z = -31751664.901437085	km
+</code></pre>
+
+<h3>Computing Velocities</h3>
+<p>You thought we were done?  Cute.  In many cases it's required to also compute the velocity, so that relativistic effects on the observer's
+	time can be accounted for.  The ephemeris data doesn't contain any data for velocity, but, fortunately velocity is just the first derivitive
+	of position.  So all we need to do is compute the derivitive.  I won't list out all of the polynomials again, but the final function
+which computes both position and velocity, as well as a slightly modified calling function to finish the derivitive out:</p>
+<pre><code class="JavaScript">
+function computePolynomial(x,coefficients){
+   //Equation 14.20 from Explanetory Supplement 3rd ed.
+   const t=new Array();
+   t[0]=1;
+   t[1]=x;
+   
+   for(let n=2;n<coefficients.length; n++){
+	   let tn=2*x*t[n-1]-t[n-2];
+	   t[n]=tn;
+   }
+   
+   //Multiply the polynomial by the coefficients.
+   //Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
+   let position=0;
+   for(let i=coefficients.length-1;i>=0;i--){
+      position+=coefficients[i]*t[i];
+   }
+   
+   //Compute velocity (just the derivitave of the above)
+   const v=new Array();
+   v[0]=0;
+   v[1]=1;
+   v[2]=4*x;
+   for(let n=3;n<coefficients.length;n++){
+      v[n]=2*x*v[n-1]+2*t[n-1]-v[n-2];
+   }
+   
+   let velocity=0;
+   for(let i=coefficients.length-1;i>=0;i--){
+      velocity+=v[i]*coefficients[i];
+   }
+   
+   let retval=new Array();
+   retval[0]=position;
+   retval[1]=velocity;
+   return retval;
+}
+
+function computeExamplePolynomials2(){	
+    let X=[0.230446411715880504E+04,  0.133726736662702635E+08, -0.782187090879053358E+04, -0.267678745522568279E+05,  
+           -0.227070698075548364E+03, -0.142012340261296774E+02, -0.924872006275108544E-01,  0.431659104815666252E-02,
+            0.356917634561652571E-03,  0.302564651657819373E-04, 0.980701702776103911E-06,  0.505819702568259545E-07,
+            0.113034198242195379E-08,  0.323800745882515925E-10];
+
+    let Y=[-0.593914454531169161E+08,  0.138391312173493067E+07, 0.725419090211108793E+06,  0.139471465250126903E+04,
+           -0.290917422263861397E+03, -0.635064566332839320E+01, -0.646844700926034299E+00, -0.120797394835047579E-01, 
+           -0.681164244772722110E-03, -0.783160742259704191E-05, -0.953933699143903451E-07,  0.170514411319974421E-07,
+            0.132846579503924915E-08,  0.625629348278007546E-10];
+
+    let Z=[-0.318846685234071501E+08, -0.647159726192409638E+06,  0.388325111500594590E+06,  0.351975238047553557E+04,
+           -0.131868705094903135E+03, -0.192040059987689204E+01, -0.335952534459033059E+00, -0.690035617434751804E-02,
+           -0.400870301836372738E-03, -0.731991272299537233E-05, -0.152615685994738755E-06,  0.386553675297770635E-08,  
+            0.592487943320094233E-09,  0.300642066655273442E-10];
+
+    let x=-0.5;
+    let temp;
+    temp=computePolynomial2(x,X);
+    temp[1]=temp[1]*(2.0*4.0/32.0);
+    console.log(temp);
+
+    temp=computePolynomial2(x,Y);
+    temp[1]=temp[1]*(2.0*4.0/32.0);
+    console.log(temp);
+
+    temp=computePolynomial2(x,Z);
+    temp[1]=temp[1]*(2.0*4.0/32.0);
+    console.log(temp);
+}
+</code></pre>
+<p>And the final output with velocities is:
+
+<script>
+computeExamplePolynomials2();
+
+function computeExamplePolynomials2(){	
+    let X=[0.230446411715880504E+04,  0.133726736662702635E+08, -0.782187090879053358E+04, -0.267678745522568279E+05,  
+           -0.227070698075548364E+03, -0.142012340261296774E+02, -0.924872006275108544E-01,  0.431659104815666252E-02,
+            0.356917634561652571E-03,  0.302564651657819373E-04, 0.980701702776103911E-06,  0.505819702568259545E-07,
+            0.113034198242195379E-08,  0.323800745882515925E-10];
+
+    let Y=[-0.593914454531169161E+08,  0.138391312173493067E+07, 0.725419090211108793E+06,  0.139471465250126903E+04,
+           -0.290917422263861397E+03, -0.635064566332839320E+01, -0.646844700926034299E+00, -0.120797394835047579E-01, 
+           -0.681164244772722110E-03, -0.783160742259704191E-05, -0.953933699143903451E-07,  0.170514411319974421E-07,
+            0.132846579503924915E-08,  0.625629348278007546E-10];
+
+    let Z=[-0.318846685234071501E+08, -0.647159726192409638E+06,  0.388325111500594590E+06,  0.351975238047553557E+04,
+           -0.131868705094903135E+03, -0.192040059987689204E+01, -0.335952534459033059E+00, -0.690035617434751804E-02,
+           -0.400870301836372738E-03, -0.731991272299537233E-05, -0.152615685994738755E-06,  0.386553675297770635E-08,  
+            0.592487943320094233E-09,  0.300642066655273442E-10];
+
+    const au= 149597870.691;
+	let x=-0.5;
+	let temp;
+	temp=computePolynomial2(x,X);
+	temp[1]=temp[1]*(2.0*4.0/32.0);
+	console.log(temp[0]);
+	console.log(temp[1]);
+
+	temp=computePolynomial2(x,Y);
+	temp[1]=temp[1]*(2.0*4.0/32.0);
+	console.log(temp[0]);
+	console.log(temp[1]);
+
+	temp=computePolynomial2(x,Z);
+	temp[1]=temp[1]*(2.0*4.0/32.0);
+	console.log(temp[0]);
+	console.log(temp[1]);
+}
+
+function computePolynomial2(x,coefficients){
+   //Equation 14.20 from Explanetory Supplement 3rd ed.
+   const t=new Array();
+   t[0]=1;
+   t[1]=x;
+   
+   for(let n=2;n<coefficients.length; n++){
+	   let tn=2*x*t[n-1]-t[n-2];
+	   t[n]=tn;
+   }
+   
+   //Multiply the polynomial by the coefficients.
+   //Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
+   let position=0;
+   for(let i=coefficients.length-1;i>=0;i--){
+      position+=coefficients[i]*t[i];
+   }
+   
+   //Compute velocity (just the derivitave of the above)
+   const v=new Array();
+   v[0]=0;
+   v[1]=1;
+   v[2]=4*x;
+   for(let n=3;n<coefficients.length;n++){
+      v[n]=2*x*v[n-1]+2*t[n-1]-v[n-2];
+   }
+   
+   let velocity=0;
+   for(let i=coefficients.length-1;i>=0;i--){
+      velocity+=v[i]*coefficients[i];
+   }
+   
+   let retval=new Array();
+   retval[0]=position;
+   retval[1]=velocity;
+   return retval;
+}
+</script>
+
+<pre>
+ X = -6706768.766943997 km
+dX =  3346870.03970893 km/day
+ Y = -60444568.85087551 km
+dY = -17014.263564507186 km/day
+ Z = -31751664.901437085 km
+dZ = -356081.96677701955 km/day
+</pre>
+
+<h2>Final Notes</h2>
+<p>Most ephemeris implementations output data in AU and AU/Day, while the above works in kilometers and km/day which is what the JPL Ephemeris uses
+internally.  If you want to match the output of other programs, you will need to covert.</p>
+<p>The code produced here was written primarily for clarity.  There are many optimizations that can be done to make it faster, though you may find that
+	it works well enough as is.  If you're looking for places for optimization, the first place to look is the generation of the arrays in "computePolynomial".
+	The arrays are regenerated for every call, but it is highly likely that you'll make multiple calls to this function with the same value of "x", so it would
+	help quite a bit to cache the array and check to see if it needs to be recomputed or not.</p>
+<p>Another good place to look for optimization is "computePolynomial" accepts an array of polynomials.  Which requires copying of data from the main data array
+into a temporary array.  It would be much faster to just pass an index into the main data array.</p>
 </body>
 </html>

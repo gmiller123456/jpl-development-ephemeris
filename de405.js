@@ -5,7 +5,6 @@
 //TODO:
 //Determine which file JD falls in
 //Load proper file
-//Compute block within file for JD
 
 class DE405{
 	constructor(){

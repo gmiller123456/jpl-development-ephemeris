@@ -1,13 +1,13 @@
 import java.io.*;
 
-class Ephemeris {
+class EphemerisOrig {
 
 	/*  
 	  This class contains the methods necessary to parse the JPL DE405 ephemeris files (text versions), and compute the position and velocity of the planets, Moon, and Sun.  
 
 	  IMPORTANT: In order to use these methods, the user should:
 		- save this class in a directory of his/her choosing;
-		- save to the same directory the text versions of the DE405 ephemeris files, which must be named  "ASCPxxxx.405", where xxxx represents the start-year of the 20-year block;
+		- save to the same directory the text versions of the DE405 ephemeris files, which must be named  "ASCPxxxx.txt", where xxxx represents the start-year of the 20-year block;
 		- have at least Java 1.1.8 installed.  
 
 	  The input is the julian date (jultime) for which the ephemeris is needed.  Note that only julian dates from 2414992.5 to 2524624.5 are supported.  This input must be specified in 
@@ -44,7 +44,7 @@ the "main" method, which contains the call to "planetary_ephemeris".
 	static double emrat = 81.30056;
 
 	/*
-	  Chebyshev coefficients for the DE405 ephemeris are contained in the files "ASCPxxxx.405".  These files are broken into intervals of length "interval_duration", in days.
+	  Chebyshev coefficients for the DE405 ephemeris are contained in the files "ASCPxxxx.txt".  These files are broken into intervals of length "interval_duration", in days.
 	*/
 	static int interval_duration = 32;
 
@@ -109,23 +109,13 @@ the "main" method, which contains the call to "planetary_ephemeris".
 		int i=0, j=0;
 
 		Ephemeris testBody = new Ephemeris();
-		double[] ephemeris_r = new double[4];
-		double[] ephemeris_rprime = new double[4];
-
-		testBody.get_planet_posvel(jultime,1,ephemeris_r,ephemeris_rprime);
-		System.out.println(ephemeris_r[1]/au);
-		System.out.println(ephemeris_r[2]/au);
-		System.out.println(ephemeris_r[3]/au);
-		return;
-
 
 		/*  
 		  This is the call to "planetary_ephemeris", which will put planetary positions into the array "planet_r", and planetary velocities into the array "planet_rprime".  
 		*/
-		//testBody.planetary_ephemeris(jultime);
+		testBody.planetary_ephemeris(jultime);
 		
 		/*  The following simply sends the output to the screen */
-		/*
 		for (i = 1; i <= 11; i++) {  
 		
 			System.out.println("Planet " + i);
@@ -137,7 +127,7 @@ the "main" method, which contains the call to "planetary_ephemeris".
 				System.out.println(testBody.planet_rprime[i][j]);  
 
 			}
-*/
+
 
 
 
@@ -192,7 +182,7 @@ the "main" method, which contains the call to "planetary_ephemeris".
 	void get_planet_posvel(double jultime,int i,double ephemeris_r[],double ephemeris_rprime[]) {
 
 		/*
-		  Procedure to calculate the position and velocity of planet i, subject to the JPL DE405 ephemeris.  The positions and velocities are calculated using Chebyshev polynomials, the coefficients of which are stored in the files "ASCPxxxx.405".  
+		  Procedure to calculate the position and velocity of planet i, subject to the JPL DE405 ephemeris.  The positions and velocities are calculated using Chebyshev polynomials, the coefficients of which are stored in the files "ASCPxxxx.txt".  
 		  The general idea is as follows:  First, check to be sure the proper ephemeris coefficients (corresponding to jultime) are available.  Then read the coefficients corresponding to jultime, and calculate the positions and velocities of the planet.  
 		*/
 
@@ -268,45 +258,40 @@ the "main" method, which contains the call to "planetary_ephemeris".
 
 		/*  Calculate the chebyshev time within the subinterval, between -1 and +1  */
 		chebyshev_time = 2*(jultime - ((subinterval - 1)*subinterval_duration + interval_start_time))/subinterval_duration - 1;
-//System.out.printf("time: %f sub: %d dur: %f start: %f\r\n",chebyshev_time,subinterval,subinterval_duration,interval_start_time);
+
 		/*  Calculate the Chebyshev position polynomials   */
 		position_poly[1] = 1;
 		position_poly[2] = chebyshev_time;
-		for (j=3;j<=number_of_coefs[i];j++){
+		for (j=3;j<=number_of_coefs[i];j++)
 			position_poly[j] = 2*chebyshev_time* position_poly[j-1] - position_poly[j-2];
-		}
-//System.out.println();
+
 		/*  Calculate the position of the i'th planet at jultime  */
 		for (j=1;j<=3;j++) {
 			ephemeris_r[j] = 0;
-			for (k=1;k<=number_of_coefs[i];k++){
-//System.out.printf("coeff %f\r\n",coef[j][k]	);
+			for (k=1;k<=number_of_coefs[i];k++)
 				ephemeris_r[j] = ephemeris_r[j] + coef[j][k]*position_poly[k];
-System.out.printf("Pos %f\r\n",ephemeris_r[j]);
-			}
+
 			/*  Convert from km to A.U.  */
-			//ephemeris_r[j] = ephemeris_r[j]/au;
+			ephemeris_r[j] = ephemeris_r[j]/au;
 			}
 
 		/*  Calculate the Chebyshev velocity polynomials  */
 		velocity_poly[1] = 0;
 		velocity_poly[2] = 1;
 		velocity_poly[3] = 4*chebyshev_time;
-		for (j=4;j<=number_of_coefs[i];j++){
+		for (j=4;j<=number_of_coefs[i];j++)
 			velocity_poly[j] = 2*chebyshev_time*velocity_poly[j-1] + 2*position_poly[j-1] - velocity_poly[j-2];
-		}
 
 		/*  Calculate the velocity of the i'th planet  */
 		for (j=1;j<=3;j++) {
 			ephemeris_rprime[j] = 0;
-			for (k=1;k<=number_of_coefs[i];k++){
+			for (k=1;k<=number_of_coefs[i];k++)
 				ephemeris_rprime[j] = ephemeris_rprime[j] + coef[j][k]*velocity_poly[k];
-			}
 			/*  The next line accounts for differentiation of the iterative formula with respect to chebyshev time.  Essentially, if dx/dt = (dx/dct) times (dct/dt), the next line includes the factor (dct/dt) so that the units are km/day  */
 			ephemeris_rprime[j] = ephemeris_rprime[j]*(2.0*number_of_coef_sets[i]/interval_duration);
 
 			/*  Convert from km to A.U.  */
-			//ephemeris_rprime[j] = ephemeris_rprime[j]/au;
+			ephemeris_rprime[j] = ephemeris_rprime[j]/au;
 
 			}
 
@@ -339,91 +324,91 @@ System.out.printf("Pos %f\r\n",ephemeris_r[j]);
 			if ((jultime >= 2414992.5) && (jultime < 2422320.5)) {
 				ephemeris_dates[1] = 2414992.5;
 				ephemeris_dates[2] = 2422320.5;
-				filename = "ASCP1900.405";
+				filename = "ASCP1900.txt";
 				records = 230;
 				}
 			else if ((jultime >= 2422320.5) && (jultime < 2429616.5)) {
 				ephemeris_dates[1] = 2422320.5;
 				ephemeris_dates[2] = 2429616.5;
-				filename = "ASCP1920.405";
+				filename = "ASCP1920.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2429616.5) && (jultime < 2436912.5)) {
 				ephemeris_dates[1] = 2429616.5;
 				ephemeris_dates[2] = 2436912.5;
-				filename = "ASCP1940.405";
+				filename = "ASCP1940.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2436912.5) && (jultime < 2444208.5)) {
 				ephemeris_dates[1] = 2436912.5;
 				ephemeris_dates[2] = 2444208.5;
-				filename = "ASCP1960.405";
+				filename = "ASCP1960.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2444208.5) && (jultime < 2451536.5)) {
 				ephemeris_dates[1] = 2444208.5;
 				ephemeris_dates[2] = 2451536.5;
-				filename = "ASCP1980.405";
+				filename = "ASCP1980.txt";
 				records = 230;
 				}
 			else if ((jultime >= 2451536.5) && (jultime < 2458832.5)) {
 				ephemeris_dates[1] = 2451536.5;
 				ephemeris_dates[2] = 2458832.5;
-				filename = "ASCP2000.405";
+				filename = "ASCP2000.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2458832.5) && (jultime < 2466128.5)) {
 				ephemeris_dates[1] = 2458832.5;
 				ephemeris_dates[2] = 2466128.5;
-				filename = "ASCP2020.405";
+				filename = "ASCP2020.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2466128.5) && (jultime < 2473456.5)) {
 				ephemeris_dates[1] = 2466128.5;
 				ephemeris_dates[2] = 2473456.5;
-				filename = "ASCP2040.405";
+				filename = "ASCP2040.txt";
 				records = 230;
 				}
 			else if ((jultime >= 2473456.5) && (jultime < 2480752.5)) {
 				ephemeris_dates[1] = 2473456.5;
 				ephemeris_dates[2] = 2480752.5;
-				filename = "ASCP2060.405";
+				filename = "ASCP2060.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2480752.5) && (jultime < 2488048.5)) {
 				ephemeris_dates[1] = 2480752.5;
 				ephemeris_dates[2] = 2488048.5;
-				filename = "ASCP2080.405";
+				filename = "ASCP2080.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2488048.5) && (jultime < 2495344.5)) {
 				ephemeris_dates[1] = 2488048.5;
 				ephemeris_dates[2] = 2495344.5;
-				filename = "ASCP2100.405";
+				filename = "ASCP2100.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2495344.5) && (jultime < 2502672.5)) {
 				ephemeris_dates[1] = 2495344.5;
 				ephemeris_dates[2] = 2502672.5;
-				filename = "ASCP2120.405";
+				filename = "ASCP2120.txt";
 				records = 230;
 				}
 			else if ((jultime >= 2502672.5) && (jultime < 2509968.5)) {
 				ephemeris_dates[1] = 2502672.5;
 				ephemeris_dates[2] = 2509968.5;
-				filename = "ASCP2140.405";
+				filename = "ASCP2140.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2509968.5) && (jultime < 2517264.5)) {
 				ephemeris_dates[1] = 2509968.5;
 				ephemeris_dates[2] = 2517264.5;
-				filename = "ASCP2160.405";
+				filename = "ASCP2160.txt";
 				records = 229;
 				}
 			else if ((jultime >= 2517264.5) && (jultime < 2524624.5)) {
 				ephemeris_dates[1] = 2517264.5;
 				ephemeris_dates[2] = 2524624.5;
-				filename = "ASCP2180.405";
+				filename = "ASCP2180.txt";
 				records = 230;
 				}
 
