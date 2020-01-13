@@ -49,10 +49,11 @@ class DE405{
 		return this.series[series].getAllPropertiesForSeries(JD,this.coefficients,blockOffset);
 	}
 
-	getEarthPositionFromEMB(emb,moon){
+	static getEarthPositionFromEMB(emb,moon){
+		const earthMoonRatio=0.813005600000000044E+02
 		const earth=new Array();
 		for(let i=0;i<6;i++){
-			earth[i]=emb[i]-moon[i]/(1+this.earthMoonRatio);
+			earth[i]=emb[i]-moon[i]/(1+earthMoonRatio);
 		}
 		return earth;
 	}

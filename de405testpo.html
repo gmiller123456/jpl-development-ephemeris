@@ -1,10 +1,10 @@
 <html>
 <head>
 </head>
-<body>
+<body id='body'>
 JPL Test positions for DE405.<br>
 Greg Miller (gmiller@gregmiller.net) 2019<br>
-This work is public domain
+This work is public domain<br>
 <script src="ascp2020.405.js"></script>
 <script src="de405.js"></script>
 <script>
@@ -42,11 +42,11 @@ function get(series,jd,x){
 	if(series==3){
 		const emb=de.getAllPropertiesForSeries(2,jd);
 		const moon=de.getAllPropertiesForSeries(9,jd);
-		b=de.getEarthPositionFromEMB(emb,moon);
+		b=DE405.getEarthPositionFromEMB(emb,moon);
 	} else if(series==10){
 		const emb=de.getAllPropertiesForSeries(2,jd);
 		const moon=de.getAllPropertiesForSeries(9,jd);
-		const earth=de.getEarthPositionFromEMB(emb,moon);
+		const earth=DE405.getEarthPositionFromEMB(emb,moon);
 		for(let i=0;i<6;i++){
 			moon[i]+=earth[i];
 		}
@@ -54,7 +54,6 @@ function get(series,jd,x){
 	} else {
 		b=de.getAllPropertiesForSeries(s,jd);
 	}
-	console.log(b);
 	return b[x-1];
 }
 
@@ -68,7 +67,8 @@ function testpo(deNumber,year,month,day,jd,t,c,x,expectedValue){
 	let error=Math.abs((v/au)-expectedValue);
 	if(t==15 || t==14){error=Math.abs(v-expectedValue);}
 	if(error>1.0E-13 || isNaN(error)){
-		console.log(`Fail: ${t}\t${c}\t${x}\t${expectedValue}\t${v/au}\tDiff=${error}`);
+		const status=`Fail: ${t}\t${c}\t${x}\t${expectedValue}\t${v/au}\tDiff=${error}`;
+		document.getElementById('body').innerHTML+="<br>"+status+"<br>";
 		fail++;
 	}
 	tests++;
@@ -318,7 +318,9 @@ testpo(405,  2039,10,1, 2466062.5,  8,  6,  2,      15.1145166574692);
 testpo(405,  2039,11,1, 2466093.5,  5,  7,  4,       0.0015178789455);
 testpo(405,  2039,12,1, 2466123.5,  6,  5,  3,      -0.4611202696746);
 }
-console.log(`Tests ran:${tests} Failed:${fail} Skipped:${skipped}`);
+
+let status=`Tests ran:${tests} Failed:${fail} Skipped:${skipped}`;
+document.getElementById('body').innerHTML+="<br>"+status+"<br>";
 
 </script>
 </body>

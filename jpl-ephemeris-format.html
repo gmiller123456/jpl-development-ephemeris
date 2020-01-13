@@ -42,8 +42,7 @@ All code in this article is public domain
 <p>The JPL Development Ephemeris provide high quality, accurate data on the positions of the planets, the moon, and sometimes a few other variables.  Writing software to
 use the JPL files is not difficult.  Unfortunately the documentation is pretty lacking, scattered, and mostly relies on reading the source code of reference implementations.
 Having looked at the reference implementations, I'm pretty convinced that the authors are better astronomers than they are programmers.  I'm not here to judge, I'm certainly
-a much better programmer than I am an astronomer.  I'm hoping with this article I can help bridge the gap, and explain how to use the JPL ephemeris data in terms that are easier
-for programmers to follow who might not be as informed on astronomy.</p>
+a much better programmer than I am an astronomer.  I'm hoping with this article I can help bridge the gap, and explain how to use the JPL ephemeris data in terms that are easier for programmers to follow who might not be as informed on astronomy, and hopefully open up new opprotunities.</p>
 
 <p>If you've looked at some of the implementations provided by NASA, or the <a href="https://www.projectpluto.com/jpl_eph.htm">Project Pluto</a> implementations, it might look like
 it's an impossibly hard task to grapple.  But the reality is that these are optimised implementations, designed to work with multiple ephemeris versions, and are written in
@@ -67,7 +66,7 @@ own files, considerably reducing the size of the files you have to work with.</p
 very friendly to the C ecosystem.  A web browser won't let you run a C application at all, but is very likely the most widely used platform for applications.  Platforms like
 Android will let you run C, but providing binaries for every type of device is practically impossible.  Other systems, like microcontrollers, have no concept of file systems.</p>
 
-<p>So, there's a lot of room to grow.</p>
+<p>So, there's a lot of room to grow.  So, let's get started.</p>
 
 <h2>Header Files</h2>
 
@@ -151,7 +150,7 @@ block is only good for a set number of days.  You'll use this later to compute a
 
 <h3>GROUP 1050</h3>
 <p>This is the most complicated part of the data, and will be explained in more detail when we actually look at the data files.  But the short version is that each column here
-represents a planet (or some other data element).  The oder is consistent across all of the ephemeris versions.  The order is:</p>
+represents a planet (or some other data element).  The order is consistent across all of the ephemeris versions.  The order is:</p>
 <p>Table 1.  List of Series order in the JPL Files:</p>
 <table border=1 cellspacing=0>
 <tr><th></th><th># Properties</th><th>Units</th><th>Center</th><th>Name</th></tr>
@@ -324,7 +323,11 @@ the filename is:</p>
 ASC[P/M][Year].[Version]
 </code></pre>
 <p>Where [P/M] stand for "plus" or "minus".  It is "M" for negative years in the Gregorian Calendar, and "P" otherwise.  [Year] is the first year the
-file has data for.  And [Version] is the version of the ephemeris it was generated for.</p>
+file has data for.  And [Version] is the version of the ephemeris it was generated for.  Since the 32 day blocks don't line up exactly on Gergorian
+Calendar years, the start and end dates will have some overlap with other files.  The first and last blocks of data for 32 days is repeated in
+adjacent files.  So, once you've computed the Gregorian Year you're looking for, you know which file to look in.  But you need to be careful when
+joining two files, otherwise including duplicated data will likey disrupt the math used to compute indexes into the data.  The year is <b>normally</b> four
+digits, but after DE430 some have 5 digits for the year.</p>
 
 <p>The numbers in the files are formatted as exponentials, with a D denoting the exponent.  You will need to replace this D with an E in order for it
 to parse correctly in most programming languages.</p>
@@ -423,7 +426,7 @@ temp = JD - validStart
 temp = 2458850.5 - 2458848.5 = 2.0
 </code></pre>
 <p>You may have noticed that many programs use a two part JD in order to increase the accuracy of the JD.  In all previous instances where we used the JD,
-you can just add the two parts together without loss of accuracy.  It is here at this step where in makes a difference.</p>
+you can just add the two parts together without loss of accuracy.  It is here at this step where it makes a difference.</p>
 <pre><code class="JavaScript">
 [alternate two part JD method]
 temp = JDpart1 - validStart + JDpart2
@@ -579,7 +582,7 @@ Z = -31751664.901437085	km
 </code></pre>
 
 <h3>Computing Velocities</h3>
-<p>You thought we were done?  Cute.  In many cases it's required to also compute the velocity, so that relativistic effects on the observer's
+<p>You thought we were done?  In many cases it's required to also compute the velocity, so that relativistic effects on the observer's
 	time can be accounted for.  The ephemeris data doesn't contain any data for velocity, but, fortunately velocity is just the first derivitive
 	of position.  So all we need to do is compute the derivitive.  I won't list out all of the polynomials again, but the final function
 which computes both position and velocity, as well as a slightly modified calling function to finish the derivitive out:</p>
@@ -741,14 +744,18 @@ dY = -17014.263564507186 km/day
 dZ = -356081.96677701955 km/day
 </pre>
 
+<p>And these match to within 1km of the values from <a href="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&command=199&TABLE_TYPE=%27VECTORS%27&REF_PLANE=%27FRAME%27&START_TIME=%272020-Jan-02%2000:00:00.0000%27&STOP_TIME=%272020-Jan-02%2000:01:00.0000%27&STEP_SIZE=%271%20hours%27&OUT_UNITS=%27KM-D%27&CENTER=500@0">JPL Horizons</a>.</p>
+
 <h2>Final Notes</h2>
 <p>Most ephemeris implementations output data in AU and AU/Day, while the above works in kilometers and km/day which is what the JPL Ephemeris uses
 internally.  If you want to match the output of other programs, you will need to covert.</p>
 <p>The code produced here was written primarily for clarity.  There are many optimizations that can be done to make it faster, though you may find that
 	it works well enough as is.  If you're looking for places for optimization, the first place to look is the generation of the arrays in "computePolynomial".
 	The arrays are regenerated for every call, but it is highly likely that you'll make multiple calls to this function with the same value of "x", so it would
-	help quite a bit to cache the array and check to see if it needs to be recomputed or not.</p>
+	help quite a bit to cache the array and check to see if it needs to be recomputed or not.  And, if you always generate the maxiumim entries required by
+any series, you can reuse the array for every planet/series.</p>
 <p>Another good place to look for optimization is "computePolynomial" accepts an array of polynomials.  Which requires copying of data from the main data array
 into a temporary array.  It would be much faster to just pass an index into the main data array.</p>
+<p>The JPL ASCII data files are available on the <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/">JPL FTP Site</a></p>
 </body>
 </html>

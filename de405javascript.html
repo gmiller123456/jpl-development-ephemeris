@@ -9,7 +9,7 @@
 
 <p>This is an example of how to implement a Ephemeris Calculator for the JPL Ephemeris.  The main part of the code is in <a href='de405.js'>de405.js</a>.  This
 implementation is for DE405, and I have included data only for Julian Dates 2458832.5 to 2466160.5 (Dec 15, 2019 to Jan 7, 2040).  I also have a page of
-<a href="de405testpo.html">Test Positions</a> for the test data provided by the JPL for that date range.
+<a href="de405testpo.html">Test Vectors</a> for the test data provided by the JPL for that date range.
 
 <form>
 Julian Date:<input id='jdInput' type=text value=2458850.5><input type=button value="Compute" onclick='computeValues();'><br>
@@ -30,23 +30,35 @@ Julian Date:<input id='jdInput' type=text value=2458850.5><input type=button val
 <tr><td>Librations</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td>Mantel Vel</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td>TT-TDB</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Earth</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 </table>
 
 <script>
+
+const au= 149597870.691;
 
 computeValues();
 
 function computeValues(){
 	const jd=document.getElementById('jdInput').value;
+	const t=new Array();
 	for(let i=0;i<13;i++){
-		displaySeries(i,jd);
+		t[i]=displaySeries(i,jd);
 	}
+	const earth=DE405.getEarthPositionFromEMB(t[2],t[9]);
+	displayData(15,earth);
 }
 
 function displaySeries(series,jd){
 	let de=new DE405();
 	
 	const d=de.getAllPropertiesForSeries(series,jd);
+	displayData(series,d);
+	return d;
+
+}
+
+function displayData(series,d){
 	const t=document.getElementById('dataTable');
 	t.rows[series+1].cells[1].innerHTML=d[0];
 	t.rows[series+1].cells[2].innerHTML=d[3];
@@ -61,6 +73,7 @@ function displaySeries(series,jd){
 	}
 
 }
+
 </script>
 
 
