@@ -757,5 +757,7 @@ any series, you can reuse the array for every planet/series.</p>
 <p>Another good place to look for optimization is "computePolynomial" accepts an array of polynomials.  Which requires copying of data from the main data array
 into a temporary array.  It would be much faster to just pass an index into the main data array.</p>
 <p>The JPL ASCII data files are available on the <a href="ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/">JPL FTP Site</a></p>
+<p>Not all data is available for every DE version.  Some versions specify a larger interval than there are files on the JPL FTP site.  But there are test
+	cases for these unavailable data ranges in the testpo.xxx files.  So you will encounter errors if you blindly run all tests.
 </body>
 </html>

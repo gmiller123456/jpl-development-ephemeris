@@ -17,7 +17,7 @@ parseFile("header.422","ascm0100.422","100");
 parseFile("header.423","ascp1800.423","50");
 parseFile("header.424","ascm0100.424","100");
 parseFile("header.430t","ascp01550.430t","50");
-parseFile("header.430_229","ascp1550.430","50");
+parseFile("header.430_229","ascp1550.430","100");
 parseFile("header.431_229","ascm01000.431","1000");
 parseFile("header.432t","ascp01550.432t","50");
 parseFile("header_228.432","ascp01550.432","50");
@@ -38,7 +38,7 @@ sub parseFile(){
 	$l=~m/NCOEFF\=\s*(\d+)/gis;
 	my $ncoeff=$1;
 
-#	print "$ncoeff,";
+	printf("%6s,",$ncoeff);
 
 	while($l!~/GROUP\s+1010/i){
 		$l=<$f>;
@@ -73,6 +73,10 @@ sub parseFile(){
 
 	my $numProperties=20;
 	printf("%3s,",$numProperties);
+
+	my @propertyNames=
+		("","mercury","venus","emb","mars","jupiter","saturn","uranus","neptune","pluto","moon","sun","nutation","libration","mantle V","TT-TDB","future","future","future","future","future");
+	printStrings(\@propertyNames,$numProperties);
 
 	$l=<$f>;
 	my @offsets=split(/\s+/,$l);
@@ -122,5 +126,18 @@ sub printArray(){
 			$t=$a[$i];
 		}
 		printf("%5s,",$t);
+	}
+}
+
+sub printStrings(){
+	my @a=@{$_[0]};
+	my $numProperties=$_[1];
+
+	for(my $i=1;$i<=$numProperties;$i++){
+		my $t="0";
+		if($i < scalar(@a)){
+			$t=$a[$i];
+		}
+		printf("%13s,","\"".$t."\"");
 	}
 }

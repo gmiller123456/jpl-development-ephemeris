@@ -55,9 +55,7 @@ class JPLSeries:
 
 	def computePolynomial(self,x,coefficients):
 		#Equation 14.20 from Explanetory Supplement 3rd ed.
-		t=[]
-		t.append(1);
-		t.append(x);
+		t=[1,x]
 
 		for n in range(2,len(coefficients)):
 			tn=2*x*t[n-1]-t[n-2]
@@ -70,10 +68,7 @@ class JPLSeries:
 			position+=coefficients[i]*t[i]
 
 		#Compute velocity (just the derivitave of the above)
-		v=[]
-		v.append(0)
-		v.append(1)
-		v.append(4*x)
+		v=[0,1,4*x]
 		for n in range(3,len(coefficients)):
 			v.append(2*x*v[n-1]+2*t[n-1]-v[n-2])
 
@@ -81,61 +76,73 @@ class JPLSeries:
 		for i in range(len(coefficients)-1,-1,-1):
 			velocity+=v[i]*coefficients[i]
 
-		retval=[]
-		retval.append(position)
-		retval.append(velocity)
-		return retval
+		return [position,velocity]
 
-class DE405:
-	def __init__(self):
+class DE:
+	def __init__(self,data):
 		#First three variables (after "name") are from "GROUP 1030" in header file
 		#Last variable is NCOEFF from first line of header file
-		self.name="de405"
-		self.start=2305424.50
-		self.end=2525008.50
-		self.daysPerBlock=32
-		self.coefficientsPerBlock=1018 + 2  #+2 because each block is padded with two zeros
+		self.name=data[0]
+		self.start=float(data[6])
+		self.end=float(data[7])
+		self.daysPerBlock=int(data[8])
+		self.coefficientsPerBlock=int(data[3]) + 2  #+2 because each block is padded with two zeros
+		self.yearsPerFile=int(data[2])
+		self.fileBaseName=data[1]
+		self.fileBase=int(self.fileBaseName[4:8])
+		
+		propertyCountIndex=9;
+		propertyCount=data[propertyCountIndex]
 
-		#Parameters 2,4,5 are from "GROUP 1050" in header file
-		#Paremeter 3 must be inferred from the type of series
 		series=[]
-		series.append(JPLSeries("mercury",3,3,14,4))
-		series.append(JPLSeries("venus",171,3,10,2))
-		series.append(JPLSeries("emb",231,3,13,2))
-		series.append(JPLSeries("mars",309,3,11,1))
-		series.append(JPLSeries("jupiter",342,3,8,1))
-		series.append(JPLSeries("saturn",366,3,7,1))
-		series.append(JPLSeries("uranus",387,3,6,1))
-		series.append(JPLSeries("neptune",405,3,6,1))
-		series.append(JPLSeries("pluto",423,3,6,1))
-		series.append(JPLSeries("moon",441,3,13,8))
-		series.append(JPLSeries("sun",753,3,11,2))
-		series.append(JPLSeries("nutation",819,2,10,4))
-		series.append(JPLSeries("libration",899,3,10,4))
-		#series[13]=JPLSeries(de,"mantle-velocity",0,0,0,0)
-		#series[14]=JPLSeries(de,"tt-tdb",0,0,0,0)
+		for i in range(propertyCount):
+			series.append(JPLSeries(data[i+propertyCountIndex+1+propertyCount*0],
+				data[i+propertyCountIndex+1+propertyCount*1],
+				data[i+propertyCountIndex+1+propertyCount*4],
+				data[i+propertyCountIndex+1+propertyCount*2],
+				data[i+propertyCountIndex+1+propertyCount*3]))
+
 		self.series=series
 		self.loadedFile=""
-		self.loadFile("ascp2020.405")
-
-		self.chunkStart=self.coefficients[0]
-		self.chunkEnd=self.coefficients[len(self.coefficients)-self.coefficientsPerBlock+1]
 
 	def loadFile(self,filename):
 		if(self.loadedFile==filename):
 			return
+		
+		print(f"Loading: {filename}")
 
 		self.coefficients=[]
-		f=open(filename,"r")
+		f=open("de"+self.name+"/"+filename,"r")
 		for l in f:
-			if(l[2:3] != " "):
+			if(len(l) >17 and l[17:18]!=" "):
+				#print(l)
 				t=re.split(" +",l);
 				for i in range(1,4):
-					self.coefficients.append(Decimal(t[i].replace("D","e")));
+					if(i>len(t)-1):
+						self.coefficients.append(Decimal("0.0"));
+					else:
+						self.coefficients.append(Decimal(t[i].replace("D","e")));
 		f.close()
 		self.loadedFile=filename
+		self.chunkStart=self.coefficients[0]
+
+		self.chunkEnd=self.coefficients[len(self.coefficients)-self.coefficientsPerBlock+1]
+
+	def loadFileForJD(self,jd):
+		year=DE.julainDateToGregorian(jd)[0]
+		year=math.floor((year-self.fileBase)/self.yearsPerFile)*self.yearsPerFile+self.fileBase
+
+		pm="p"
+		if(year<0):
+			year=abs(year)
+			pm="m"
+
+		neededFile=f"ascp{year}.{self.name}"
+		self.loadFile(neededFile)
 
 	def getAllPropertiesForSeries(self,series,JD):
+		self.loadFileForJD(JD)
+
 		blockNumber=math.floor((JD-self.chunkStart)/self.daysPerBlock)
 		blockOffset=blockNumber*(self.coefficientsPerBlock)
 		return self.series[series].getAllPropertiesForSeries(JD,self.coefficients,blockOffset)
@@ -148,3 +155,33 @@ class DE405:
 			earth[i]=emb[i]-moon[i]/(Decimal(1)+earthMoonRatio)
 		return earth
 	
+	@staticmethod
+	def INT(a):
+		return math.floor(a)
+
+	#From Meeus, CH7
+	@staticmethod
+	def julainDateToGregorian(jd):
+		temp=jd+Decimal(.5)
+		Z=math.trunc(temp)
+		F=temp-Z
+		A=Z
+		if(Z>=2299161):
+			alpha=DE.INT((Z-Decimal(1867216.25))/Decimal(36524.25))
+			A=Z+1+alpha-DE.INT(alpha/4)
+		
+		B=A+1524
+		C=DE.INT((B-122.1)/365.25)
+		D=DE.INT(365.25*C)
+		E=DE.INT((B-D)/30.6001)
+
+		day=B-D-DE.INT(30.6001*E)+F
+		month=E-1
+		if(E>13):
+			month=E-13
+		
+		year=C-4716
+		if(month<3):
+			year=C-4715
+
+		return [year,month,day]
