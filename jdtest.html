@@ -1,0 +1,41 @@
+<script>
+julainDateToGregorian(2436116.31);
+julainDateToGregorian(1842713.0);
+julainDateToGregorian(1507900.13);
+
+function INT(a){
+	return Math.floor(a);
+}
+
+//From Meeus, CH7
+function julainDateToGregorian(jd){
+	let temp=jd+.5;
+	let Z=Math.trunc(temp);
+	let F=temp-Z;
+	let A=Z;
+	if(Z>=2299161){
+		let alpha=INT((Z-1867216.25)/36524.25);
+		A=Z+1+alpha-INT(alpha/4);
+	}
+	let B=A+1524;
+	let C=INT((B-122.1)/365.25);
+	let D=INT(365.25*C);
+	let E=INT((B-D)/30.6001);
+
+	let day=B-D-INT(30.6001*E)+F;
+	let month=E-1;
+	if(E>13){
+		month=E-13;
+	}
+	let year=C-4716;
+	if(month<3){
+		year=C-4715;
+	}
+
+	console.log(year+"-"+month+"-"+day);
+
+}
+
+
+console.log("Here");
+</script>
