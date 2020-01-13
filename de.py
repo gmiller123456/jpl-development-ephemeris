@@ -90,8 +90,16 @@ class DE:
 		self.yearsPerFile=int(data[2])
 		self.fileBaseName=data[1]
 		self.fileBase=int(self.fileBaseName[4:8])
-		
-		propertyCountIndex=9;
+		self.fileNamePad=4
+		if(self.fileBaseName[9:10]=="."):
+			print ("Here")
+			self.fileBase=int(self.fileBaseName[4:9])
+			self.fileNamePad=5
+
+		if(self.fileBaseName[3:4]=="m"):
+			self.fileBase*=-1
+
+		propertyCountIndex=9
 		propertyCount=data[propertyCountIndex]
 
 		series=[]
@@ -132,12 +140,15 @@ class DE:
 		year=DE.julainDateToGregorian(jd)[0]
 		year=math.floor((year-self.fileBase)/self.yearsPerFile)*self.yearsPerFile+self.fileBase
 
+		print(f"{year} {self.fileBase} {self.yearsPerFile}")
+
 		pm="p"
 		if(year<0):
 			year=abs(year)
 			pm="m"
 
-		neededFile=f"ascp{year}.{self.name}"
+		fileName=("asc"+pm+"{:0>"+str(self.fileNamePad)+"d}."+self.name).format(year)
+		neededFile=fileName
 		self.loadFile(neededFile)
 
 	def getAllPropertiesForSeries(self,series,JD):

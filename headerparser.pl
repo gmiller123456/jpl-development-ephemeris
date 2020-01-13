@@ -16,7 +16,7 @@ parseFile("header.421","ascp1900.421","150");
 parseFile("header.422","ascm0100.422","100");
 parseFile("header.423","ascp1800.423","50");
 parseFile("header.424","ascm0100.424","100");
-parseFile("header.430t","ascp01550.430t","50");
+parseFile("header.430t","ascp01550.430t","100");
 parseFile("header.430_229","ascp1550.430","100");
 parseFile("header.431_229","ascm01000.431","1000");
 parseFile("header.432t","ascp01550.432t","50");
