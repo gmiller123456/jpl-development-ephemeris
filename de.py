@@ -138,14 +138,15 @@ class DE:
 
 	def loadFileForJD(self,jd):
 		year=DE.julainDateToGregorian(jd)[0]
-		year=math.floor((year-self.fileBase)/self.yearsPerFile)*self.yearsPerFile+self.fileBase
-
-		print(f"{year} {self.fileBase} {self.yearsPerFile}")
 
 		pm="p"
 		if(year<0):
 			year=abs(year)
 			pm="m"
+
+		year=math.floor((year-self.fileBase)/self.yearsPerFile)*self.yearsPerFile+self.fileBase
+
+		print(f"{year} {self.fileBase} {self.yearsPerFile}")
 
 		fileName=("asc"+pm+"{:0>"+str(self.fileNamePad)+"d}."+self.name).format(year)
 		neededFile=fileName
