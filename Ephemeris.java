@@ -104,7 +104,7 @@ the "main" method, which contains the call to "planetary_ephemeris".
 	public static void main(String args[]) { 
 
 		/* USER MUST SPECIFY jultime HERE.  Example value is 2451545.0 */
-		double jultime = 2458850.5;
+		double jultime = 2458951.0;
 
 		int i=0, j=0;
 
@@ -112,10 +112,10 @@ the "main" method, which contains the call to "planetary_ephemeris".
 		double[] ephemeris_r = new double[4];
 		double[] ephemeris_rprime = new double[4];
 
-		testBody.get_planet_posvel(jultime,1,ephemeris_r,ephemeris_rprime);
-		System.out.println(ephemeris_r[1]/au);
-		System.out.println(ephemeris_r[2]/au);
-		System.out.println(ephemeris_r[3]/au);
+		testBody.get_planet_posvel(jultime,5,ephemeris_r,ephemeris_rprime);
+		System.out.println(ephemeris_r[1]);
+		System.out.println(ephemeris_r[2]);
+		System.out.println(ephemeris_r[3]);
 		return;
 
 
