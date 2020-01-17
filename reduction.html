@@ -73,8 +73,10 @@ function reductionTest(utc1, utc2, bodyNum,
 
 	let jd=tt1+tt2;
 
-	const earth=de.getEarth(utc1+utc2-69.185662/60.0/60.0/24.0);
+
+	const earth=de.getEarth(jd);
 	//const earth=de.getEarth(jd);
+	console.log("Ear");
 	console.log(earth);
 
 	let body=de.getAllPropertiesForSeries(bodyNum,jd);
@@ -105,12 +107,13 @@ function reductionTest(utc1, utc2, bodyNum,
 	body[3]-=earth[3];
 	body[4]-=earth[4];
 	body[5]-=earth[5];
+	console.log("Body geo:");
 	console.log(body);
 
 	let rnpb=IAU.pnm06a(0, jd);
 	console.log(rnpb);
 
-	//body=IAU.rxp(rnpb,body);
+	body=IAU.rxp(rnpb,body);
 	console.log(body);
 
 	//Use UT1 for Earth Rotation Angle
@@ -131,12 +134,14 @@ function reductionTest(utc1, utc2, bodyNum,
 	observerPV[1][1]=earth[4];
 	observerPV[1][2]=earth[5];
 	observerPV=IAU.pvtob(lon,lat,0,0,0,0,era);
+	console.log("ObserverPV");
 	console.log(observerPV);
 
 	rnpb=IAU.tr(rnpb);
 	console.log(rnpb);
 	
-	//observerPV=IAU.rxpv(rnpb,observerPV);
+	observerPV=IAU.rxpv(rnpb,observerPV);
+	console.log("ObserverPV after NPB");
 	console.log(observerPV);
 
 	//Convert body position to topocentric
@@ -144,12 +149,36 @@ function reductionTest(utc1, utc2, bodyNum,
 	body[1]-=observerPV[0][1];
 	body[2]-=observerPV[0][2];	
 
-	console.log(`body topocentric ${body[0]/1.49597870691E+8} ${body[1]/1.49597870691E+8} ${body[2]/1.49597870691E+8} `);
+	console.log(`body topocentric ${body[0]} ${body[1]} ${body[2]} `);
 	const km2AU=1.0/1.49597870691E+11;
 	const CR=(1/299792458.0)/86400.0;
 	//const CR=(149597870.7e3/299792458.0)/86400.0*km2AU;
 	console.log(`earth vel1 ${earth[0]*km2AU} ${earth[1]*km2AU} ${earth[2]*km2AU} `);
 	console.log(`earth vel2 ${earth[0]*CR} ${earth[1]*CR} ${earth[2]*CR} `);
+
+
+
+	const lengthV=Math.sqrt(earth[3]*earth[3]+earth[4]*earth[4]+earth[5]*earth[5])*km2AU;
+	const sunDistance=Math.sqrt(earth[0]*earth[0]+earth[1]*earth[1]+earth[2]*earth[2])*km2AU;
+	const bodyLen=Math.sqrt(body[0]*body[0]+body[1]*body[1]+body[2]*body[2])*km2AU;
+	const bodyUnitVector=new Array();
+	bodyUnitVector[0]=body[0]/bodyLen;
+	bodyUnitVector[1]=body[1]/bodyLen;
+	bodyUnitVector[2]=body[2]/bodyLen;
+	const lorenzFactor=Math.sqrt(1-(lengthV*lengthV));
+	console.log("Body Unit:");
+	console.log(bodyUnitVector);
+
+	const earthVelocity=new Array();
+	earthVelocity[0]=earth[3];
+	earthVelocity[1]=earth[4];
+	earthVelocity[2]=earth[5];
+
+	console.log(`${lengthV} ${sunDistance} ${bodyLen} `);
+
+	const bodyDirection=IAU.ab(bodyUnitVector,earthVelocity,sunDistance,lorenzFactor);
+	console.log(bodyDirection);
+
 
 	//Convert coords to polar, which gives RA/DEC
 	const r = Math.sqrt(body[0] * body[0] + body[1] * body[1] + body[2] * body[2]);
@@ -160,15 +189,14 @@ function reductionTest(utc1, utc2, bodyNum,
 	if(dec<0) dec+=2*Math.PI;
 	dec=.5*Math.PI-dec;
 
-	console.log(`Body J2000: ${ra*180.0/Math.PI} , ${dec*180.0/Math.PI}`);
-	console.log(`Diff ${ra*180.0/Math.PI-expectedRAJ2000}, ${dec*180.0/Math.PI-(expectedDecJ2000)}`);
+	console.log(`Body of Date: ${ra*180.0/Math.PI} , ${dec*180.0/Math.PI}`);
+	console.log(`Diff J2000 ${ra*180.0/Math.PI-expectedRAJ2000}, ${dec*180.0/Math.PI-(expectedDecJ2000)}`);
 
 	//Convert to altaz
 	const GAST=IAU.gst06a(utc1,utc2,tt1,tt2);
 	console.log("GAST="+GAST);
 
 	const h=GAST + lon - ra;
-	console.log("LST="+(GAST + lon)*180.0/Math.PI);
 	console.log("h="+h);
 
 	const sina=Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(h)*Math.cos(lat);

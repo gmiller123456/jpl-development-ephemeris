@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&command=199&TABLE_TYPE=%27VECTORS%27&REF_PLANE=%27FRAME%27&START_TIME=%272020-Jan-02%2000:00:00.0000%27&STOP_TIME=%272020-Jan-02%2000:01:00.0000%27&STEP_SIZE=%271%20hours%27&OUT_UNITS=%27KM-D%27&CENTER=500@0
+<br>
+my $siteCoord="$lon,$lat,0";<br>
+my $url="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&TABLE_TYPE=OBSERVER&QUANTITIES='A'&COMMAND=\"$command\"&CSV_FORMAT=YES&CAL_FORMAT=BOTH&ANG_FORMAT=DEG&APPARENT=AIRLESS&REF_SYSTEM=J2000&EXTRA_PREC=yes&CENTER='coord'&SITE_COORD=\"$siteCoord\"&START_TIME=\"$startTime\"&STOP_TIME=\"$stopTime\"&STEP_SIZE=\"$stepSize\"&SKIP_DAYLT=NO";
+
+
+<table border=1 cellspacing=0>
+<tr><td align=right><b>Body:</b></td><td><input type=text value='199' name='' id='body'></td></tr>
+<tr><td align=right><b>Start Time:</b></td><td><input type=text value='2020-Jan-02 00:00:00.0000' name='' id='start'></td></tr>
+<tr><td align=right><b>Stop Time:</b></td><td><input type=text value='2020-Jan-02 00:00:01.0000' name='' id='stop'></td></tr>
+<tr><td align=right><b>Step Size:</b></td><td><input type=text value='1 day' name='' id='step'></td></tr>
+<tr><td align=right><b>Ref Plane:</b></td><td><input type=text value='FRAME' name='' id='ref'></td></tr>
+<tr><td align=right><b>Table Type:</b></td><td><input type=text value='VECTORS' name='' id='tabletype'></td><td>VECTORS ELEMENTS OBSERVER</td></tr>
+<tr><td align=right><b>Output Units:</b></td><td><input type=text value='KM-D' name='' id='outputunits'></td></tr>
+<tr><td align=right><b>Center:</b></td><td><input type=text value='500@0' name='' id='center'></td><td>500@0 coord</tr>
+<tr><td align=right><b>Site:</b></td><td><input type=text value='274.236400,38.2464000,0.0000000' name='' id='site'></td><td>Lon,Lat,Alt 274.236400,38.2464000,0.0000000</tr>
+</table>
+<input type=button value="Generate URL" onclick="generateURL();"><br>
+<span id='output'></span>
+<script>
+function generateURL(){
+	let url="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1";
+	let type=document.getElementById('tabletype').value;
+
+	url+="&command="+document.getElementById('body').value;
+	url+="&START_TIME=\""+document.getElementById('start').value+"\"";
+	url+="&STOP_TIME=\""+document.getElementById('stop').value+"\"";
+	url+="&STEP_SIZE=\""+document.getElementById('step').value+"\"";
+	url+="&REF_PLANE=\""+document.getElementById('ref').value+"\"";
+	url+="&TABLE_TYPE=\""+document.getElementById('tabletype').value+"\"";
+	url+="&OUT_UNITS=\""+document.getElementById('outputunits').value+"\"";
+
+	if(type=="OBSERVER"){
+		url+="&CSV_FORMAT=YES";
+		url+="&CAL_FORMAT=BOTH";
+		url+="&ANG_FORMAT=DEG";
+		url+="&APPARENT=AIRLESS";
+		url+="&REF_SYSTEM=J2000";
+		url+="&EXTRA_PREC=yes";
+		url+="&CENTER=\"coord\"";
+		url+="&SITE_COORD=\""+document.getElementById('site').value+"\"";
+		url+="&SKIP_DAYLT=NO";
+	} else {
+		url+="&CENTER="+document.getElementById('center').value;
+    }
+
+	document.getElementById('output').innerHTML="<a href='"+url+"'>"+url+"</a>";
+}	
+</script>
+
+</body>
+</html>
