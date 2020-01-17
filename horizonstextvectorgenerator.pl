@@ -54,11 +54,9 @@ sub getData(){
 	my $stepSize="1d";
 	my $command=shift();
 
-	my $url="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&command=$command&TABLE_TYPE=%27VECTORS%27&REF_PLANE=%27FRAME%27&START_TIME=%27$startTime%27&STOP_TIME=%27$stopTime%27&STEP_SIZE=%271%20hours%27&OUT_UNITS=%27KM-D%27&CENTER=500\@0";
+	my $url="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&command=$command&TABLE_TYPE=%27VECTORS%27&REF_PLANE=%27FRAME%27&START_TIME=%27$startTime%27&STOP_TIME=%27$stopTime%27&STEP_SIZE=%271%20hours%27&OUT_UNITS=%27KM-D%27&CENTER=500\@0&CSV_FORMAT=YES";
 	#my $url="https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&TABLE_TYPE=VECTOR&QUANTITIES='A'&COMMAND=\"$command\"&CSV_FORMAT=YES&CAL_FORMAT=BOTH&ANG_FORMAT=DEG&APPARENT=AIRLESS&REF_SYSTEM=J2000&EXTRA_PREC=yes&CENTER='coord'&SITE_COORD=\"$siteCoord\"&START_TIME=\"$startTime\"&STOP_TIME=\"$stopTime\"&STEP_SIZE=\"$stepSize\"&SKIP_DAYLT=NO";
-print "$url\r\n";
-return;
-	my $text=`wget -q -O- '$url'`;
+	my $text=`wget -q -O- --no-check-certificate '$url'`;
 
 	my $dataStart=index($text,"\$\$SOE")+5;
 	my $dataEnd=index($text,"\$\$EOE");
@@ -69,20 +67,5 @@ return;
 
 	my @f=split(/,/,$data);
 
-	#print "Date:        $f[0]\r\n";
-	#print "Jul Day:     $f[1]\r\n";
-	#print "RA J2000:    $f[4]\r\n";
-	#print "DEC J2000:   $f[5]\r\n";
-	#print "RA of Date:  $f[6]\r\n";
-	#print "DEC of Date: $f[7]\r\n";
-	#print "Azi:         $f[10]\r\n";
-	#print "Alt:         $f[11]\r\n";
-	#print "SID Time:    $f[17]\r\n";
-	#print "1 way LT:    $f[41]\r\n";
-	#print "TDB-UT:      $f[54]\r\n";
-	#print "Hour Ang:    $f[76]\r\n";
-
-	#planet, lat, lon, date, jul day, RA J2000, DEC J2000, RA of Date, Dec of date, Azi, Alt, Sidereal Time, 1 way Light Time, TDB-UT, Hour angle
-
-	#print "$command,$lat,$lon,\"$f[0]\",$f[1],$f[4],$f[5],$f[6],$f[7],$f[10],$f[11],$f[17],$f[41],$f[54],$f[76]\r\n";
+	print "$command,$f[0],\"$f[1]\",$f[2],$f[3],$f[4],$f[5],$f[6],$f[7],$f[8],$f[9],$f[10]\r\n";
 }
