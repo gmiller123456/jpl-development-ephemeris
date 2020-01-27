@@ -66,7 +66,6 @@ use POSIX;
 	}
 
 	sub computePolynomial{
-print "Here\r\n";
 		my $self=shift;
 		my $x=shift;
 		my @coefficients=@{shift()};
@@ -74,7 +73,7 @@ print "Here\r\n";
 		#Equation 14.20 from Explanetory Supplement 3rd ed.
 		my @t=(1,$x);
 
-		for (my $n=0;$n<2,scalar(@coefficients);$n++){
+		for (my $n=2;$n<scalar(@coefficients);$n++){
 			my $tn=2*$x*$t[$n-1]-$t[$n-2];
 			$t[$n+2]=$tn;
 		}
@@ -96,7 +95,6 @@ print "Here\r\n";
 		for (my $i=scalar(@coefficients)-1;$i>-1;$i--){
 			$velocity+=$v[$i]*$coefficients[$i];
 		}
-print "Done\r\n";
 		return [$position,$velocity];
 	}
 

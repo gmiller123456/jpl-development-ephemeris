@@ -2,7 +2,6 @@
 use strict;
 use lib ".";
 
-use JPLSeries;
 use DE;
 
 
@@ -10,4 +9,5 @@ my @p=  (  "405",      "ascp1600.405",   20,  1018,   "1599 DEC 09 00:00:00",   
 
 my $de=DE->new(\@p);
 
-my $t=$de->getAllPropertiesForSeries(0,2458864.5);
+my @t=$de->getAllPropertiesForSeries(0,2458864.5);
+print join(",",@t);
