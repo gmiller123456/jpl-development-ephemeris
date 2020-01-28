@@ -54,13 +54,38 @@ sub new {
 	return $self;
 }
 
+sub getAllPropertiesForSeries{
+	my $self=shift;
+	my $series=shift;
+	my $JD=shift;
+
+	$self->loadFileForJD($JD);
+	my $blockNumber=floor(($JD-$self->{chunkStart})/$self->{daysPerBlock});
+	my $blockOffset=$blockNumber*($self->{coefficientsPerBlock});
+
+	return $self->{series}[$series]->getAllPropertiesForSeries($JD,$self->{coefficients},$blockOffset);
+}
+
+#@staticmethod
+sub getEarthPositionFromEMB{
+	my @emb=@{$_[0]};
+	my @moon=@{$_[1]};
+
+	my $earthMoonRatio=0.813005600000000044E+02;
+	my @earth=(0,0,0,0,0,0);
+	for (my $i=0;$i<6;$i++){
+		$earth[$i]=$emb[$i]-$moon[$i]/(1.0+$earthMoonRatio);
+	}
+
+	return @earth;
+}
+
 sub loadFile{
 	my $self=shift;
 	my $filename=shift;
 	if($self->{loadedFile} eq $filename){
 		return;
 	}
-	
 	$self->{coefficients}=();
 
 	open(my $f,"de".$self->{name}."/".$filename);
@@ -86,7 +111,7 @@ sub loadFile{
 	$self->{loadedFile}=$filename;
 	$self->{chunkStart}=$self->{coefficients}[0];
 
-	$self->{chunkEnd}=$self->{coefficients}[scalar($self->{coefficients})-$self->{coefficientsPerBlock}+1];
+	$self->{chunkEnd}=$self->{coefficients}[$count-$self->{coefficientsPerBlock}+1];
 }
 
 sub loadFileForJD{
@@ -105,32 +130,6 @@ sub loadFileForJD{
 	my $fileName=sprintf("asc".$pm."%0".$self->{fileNamePad}."d.".$self->{name},$year);
 	my $neededFile=$fileName;
 	$self->loadFile($neededFile);
-}
-
-sub getAllPropertiesForSeries{
-	my $self=shift;
-	my $series=shift;
-	my $JD=shift;
-
-	$self->loadFileForJD($JD);
-
-	my $blockNumber=floor(($JD-$self->{chunkStart})/$self->{daysPerBlock});
-	my $blockOffset=$blockNumber*($self->{coefficientsPerBlock});
-
-	return $self->{series}[$series]->getAllPropertiesForSeries($JD,$self->{coefficients},$blockOffset);
-}
-
-#@staticmethod
-sub getEarthPositionFromEMB{
-	my @emb=@{$_[0]};
-	my @moon=@{$_[1]};
-
-	my $earthMoonRatio=0.813005600000000044E+02;
-	my @earth=[0,0,0,0,0,0];
-	for (my $i=0;$i<6;$i++){
-		$earth[$i]=$emb[$i]-$moon[$i]/(1.0+$earthMoonRatio);
-	}
-	return @earth;
 }
 
 #@staticmethod

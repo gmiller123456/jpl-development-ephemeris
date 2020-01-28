@@ -56,7 +56,6 @@ use POSIX;
 		my $x=shift;
 		my @coefficients=@{shift()};
 		my $offset=shift;
-
 		my @c=();
 		for (my $i=0;$i<$self->{numberOfCoefficients};$i++){
 			$c[$i]=$coefficients[$offset+$i];
@@ -71,11 +70,11 @@ use POSIX;
 		my @coefficients=@{shift()};
 
 		#Equation 14.20 from Explanetory Supplement 3rd ed.
-		my @t=(1,$x);
+		my @t=(1.0,$x);
 
 		for (my $n=2;$n<scalar(@coefficients);$n++){
 			my $tn=2*$x*$t[$n-1]-$t[$n-2];
-			$t[$n+2]=$tn;
+			$t[$n]=$tn;
 		}
 
 		#Multiply the polynomial by the coefficients.
@@ -95,7 +94,7 @@ use POSIX;
 		for (my $i=scalar(@coefficients)-1;$i>-1;$i--){
 			$velocity+=$v[$i]*$coefficients[$i];
 		}
-		return [$position,$velocity];
+		return ($position,$velocity);
 	}
 
 
