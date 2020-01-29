@@ -10,24 +10,19 @@ namespace DE
 {
     class DE
     {
-
         int name;
         double start;
         double end;
-        int daysPerBlock;
-        int coefficientsPerBlock;
+        public int daysPerBlock;
+        public int coefficientsPerBlock;
         int yearsPerFile;
-        string fileBaseName;
-        int fileBase;
-        int fileNamePad;
-        string loadedFile;
-        double chunkStart;
-        double chunkEnd;
+        public double chunkStart;
+        public double chunkEnd;
         JPLSeries[] series;
-        double[] coefficients;
+        public double[] coefficients;
+        FileManager fileManager;
 
         public DE(object[] data) {
-
 
             this.name = (int)data[0];
             this.start = (double)data[6];
@@ -35,18 +30,8 @@ namespace DE
             this.daysPerBlock = (int)data[8];
             this.coefficientsPerBlock = (int)data[3] + 2;  //+2 because each block is padded with two zeros
             this.yearsPerFile = (int)data[2];
-            this.fileBaseName = (string)data[1];
-            this.fileBase = int.Parse(this.fileBaseName.Substring(4, 4));
-            this.fileNamePad = 4;
 
-            if (fileBaseName.Substring(9, 1).Equals(".")) {
-                fileBase = int.Parse(fileBaseName.Substring(4, 5));
-                fileNamePad = 5;
-            }
-
-            if (fileBaseName.Substring(3, 1).Equals("m")) {
-                fileBase *= -1;
-            }
+            fileManager = new FileManager(this.name,(string)data[1], this.yearsPerFile);
 
             int propertyCountIndex = 9;
             int propertyCount = (int)data[propertyCountIndex];
@@ -59,15 +44,12 @@ namespace DE
                     (int)data[i + propertyCountIndex + 1 + propertyCount * 2],
                     (int)data[i + propertyCountIndex + 1 + propertyCount * 3]);
             }
-
-            this.loadedFile = "";
-
         }
 
         public double[] getAllPropertiesForSeries(int series, double JD)
         {
 
-            this.loadFileForJD(JD);
+            this.fileManager.loadFileForJD(JD,this);
             int blockNumber = (int)Math.Floor((JD - this.chunkStart) / this.daysPerBlock);
             int blockOffset = blockNumber * (this.coefficientsPerBlock);
 
@@ -85,27 +67,65 @@ namespace DE
             return earth;
         }
 
-        void loadFile(string filename)
+    }
+
+    class FileManager
+    {
+        int name;
+        string fileBaseName;
+        int fileBase;
+        int fileNamePad;
+        int yearsPerFile;
+        string loadedFile;
+
+        public FileManager(int name, string fileBaseName, int yearsPerFile)
+        {
+            this.loadedFile = "";
+            this.name = name;
+            this.yearsPerFile = yearsPerFile;
+            this.fileBaseName = fileBaseName;
+            this.fileBase = int.Parse(this.fileBaseName.Substring(4, 4));
+            this.fileNamePad = 4;
+
+            if (fileBaseName.Substring(9, 1).Equals("."))
+            {
+                fileBase = int.Parse(fileBaseName.Substring(4, 5));
+                fileNamePad = 5;
+            }
+
+            if (fileBaseName.Substring(3, 1).Equals("m"))
+            {
+                fileBase *= -1;
+            }
+        }
+
+        void loadFile(string filename, DE de)
         {
             if (this.loadedFile.Equals(filename))
             {
                 return;
             }
-            this.coefficients = new double[this.daysPerBlock*(this.coefficientsPerBlock+2)*this.yearsPerFile*366];
+            de.coefficients = new double[de.daysPerBlock * (de.coefficientsPerBlock + 2) * this.yearsPerFile * 366];
 
             System.IO.StreamReader f = new System.IO.StreamReader("../../../../../de" + this.name + "/" + filename);
             int count = 0;
             string l = f.ReadLine();
-            while (l != null) {
-                if (l.Length > 17 && !l.Substring(17, 1).Equals(" ")) {
+            while (l != null)
+            {
+                if (l.Length > 17 && !l.Substring(17, 1).Equals(" "))
+                {
                     string[] t = Regex.Split(l, " +");
-                    for (int i = 1; i < 4; i++) {
-                        if (i > t.Length - 1) {
-                            this.coefficients[count] = 0.0;
+                    for (int i = 1; i < 4; i++)
+                    {
+                        if (i > t.Length - 1)
+                        {
+                            de.coefficients[count] = 0.0;
                             count++;
-                        } else {
+                        }
+                        else
+                        {
                             t[i] = t[i].Replace("D", "e");
-                            this.coefficients[count] = Double.Parse(t[i]);
+                            de.coefficients[count] = Double.Parse(t[i]);
                             count++;
                         }
                     }
@@ -115,59 +135,66 @@ namespace DE
 
             f.Close();
             this.loadedFile = filename;
-            this.chunkStart = this.coefficients[0];
+            de.chunkStart = de.coefficients[0];
 
-            this.chunkEnd = this.coefficients[count - this.coefficientsPerBlock + 1];
+            de.chunkEnd = de.coefficients[count - de.coefficientsPerBlock + 1];
         }
 
-        void loadFileForJD(double jd)
+        public void loadFileForJD(double jd, DE de)
         {
-            if (jd >= this.chunkStart && jd <= this.chunkEnd) {
+            if (jd >= de.chunkStart && jd <= de.chunkEnd)
+            {
                 return;
             }
 
-            int year = (DE.julainDateToGregorian(jd))[0];
+            int year = (julainDateToGregorian(jd))[0];
             string pm = "p";
-            if (year < 0) {
+            if (year < 0)
+            {
                 year = Math.Abs(year);
                 pm = "m";
             }
 
             year = (int)Math.Floor((double)((year - this.fileBase) / this.yearsPerFile)) * this.yearsPerFile + this.fileBase;
 
-            string fileName = String.Format("asc"+pm+"{0,"+this.fileNamePad+"}."+this.name,year);
-            this.loadFile(fileName);
+            string fileName = String.Format("asc" + pm + "{0," + this.fileNamePad + "}." + this.name, year);
+            this.loadFile(fileName,de);
         }
 
-        static int INT(double a) {
+        static int INT(double a)
+        {
             return (int)Math.Floor(a);
         }
 
         //From Meeus, CH7
-        static int[] julainDateToGregorian(double jd) {
+        static int[] julainDateToGregorian(double jd)
+        {
             double temp = jd + .5;
             int Z = (int)Math.Floor(temp);
             double F = temp - Z;
             int A = Z;
 
-            if (Z >= 2299161) {
+            if (Z >= 2299161)
+            {
                 int alpha = INT((Z - 1867216.25) / 36524.25);
-                A = Z + 1 + alpha - DE.INT(alpha / 4.0);
+                A = Z + 1 + alpha - INT(alpha / 4.0);
             }
 
             int B = A + 1524;
-            int C = DE.INT((B - 122.1) / 365.25);
-            int D = DE.INT(365.25 * C);
-            int E = DE.INT((B - D) / 30.6001);
+            int C = INT((B - 122.1) / 365.25);
+            int D = INT(365.25 * C);
+            int E = INT((B - D) / 30.6001);
 
-            double day = B - D - DE.INT(30.6001 * E) + F;
+            double day = B - D - INT(30.6001 * E) + F;
             int month = E - 1;
-            if (E > 13) {
+            if (E > 13)
+            {
                 month = E - 13;
             }
 
             int year = C - 4716;
-            if (month < 3) {
+            if (month < 3)
+            {
                 year = C - 4715;
             }
 
@@ -178,6 +205,7 @@ namespace DE
 
             return r;
         }
+
     }
 
     class JPLSeries {
@@ -229,7 +257,6 @@ namespace DE
 
         double[] computePropertyForSeries(double x, double[] coefficients, int offset) {
             double[] c = new double[this.numberOfCoefficients];
-            Console.WriteLine(offset);
 
             for (int i = 0; i < this.numberOfCoefficients; i++) {
                 c[i] = coefficients[offset + i];
@@ -270,13 +297,10 @@ namespace DE
                 velocity += v[i] * coefficients[i];
             }
 
-
             double[] r = new double[2];
             r[0] = position;
             r[1] = velocity;
             return r;
         }
-
-
     }
 }

@@ -233,7 +233,6 @@ use POSIX;
 		my @coefficients=@{shift()};
 		my $offset=shift;
 		my @c=();
-		print "$offset\r\n\r\n";
 		for (my $i=0;$i<$self->{numberOfCoefficients};$i++){
 			$c[$i]=$coefficients[$offset+$i];
 		}

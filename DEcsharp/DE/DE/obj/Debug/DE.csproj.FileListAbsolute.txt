@@ -1,0 +1,5 @@
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.csproj.CoreCompileInputs.cache
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\bin\Debug\DE.exe
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\bin\Debug\DE.pdb
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.exe
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.pdb
