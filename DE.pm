@@ -117,6 +117,10 @@ sub loadFileForJD{
 	my $self=shift;
 	my $jd=shift;
 
+	if($jd>=$self->{chunkStart} && $jd<=$self->{chunkEnd}){
+		return;
+	}
+
 	my $year=(DE::julainDateToGregorian($jd))[0];
 	my $pm="p";
 	if($year<0){
@@ -229,6 +233,7 @@ use POSIX;
 		my @coefficients=@{shift()};
 		my $offset=shift;
 		my @c=();
+		print "$offset\r\n\r\n";
 		for (my $i=0;$i<$self->{numberOfCoefficients};$i++){
 			$c[$i]=$coefficients[$offset+$i];
 		}
