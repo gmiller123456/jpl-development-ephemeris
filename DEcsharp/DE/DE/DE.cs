@@ -54,7 +54,7 @@ namespace DE
             return this.series[series].getAllPropertiesForSeries(JD, this.fileManager.coefficients, blockOffset);
         }
 
-        static double[] getEarthPositionFromEMB(double[] emb, double[] moon)
+        public static double[] getEarthPositionFromEMB(double[] emb, double[] moon)
         {
             const double earthMoonRatio = 0.813005600000000044E+02;
             double[] earth = { 0, 0, 0, 0, 0, 0 };

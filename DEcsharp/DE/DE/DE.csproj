@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="DE.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Testpo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
