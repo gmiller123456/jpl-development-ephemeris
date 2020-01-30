@@ -21,6 +21,16 @@ parseFile("header.430_229","ascp1550.430","100");
 parseFile("header.431_229","ascm01000.431","1000");
 parseFile("header.432t","ascp01550.432t","50");
 parseFile("header_228.432","ascp01550.432","50");
+
+parseFile("header.434","ascp01550.434","100");
+parseFile("header.435_177","ascp01550.435","100");
+parseFile("header.436","ascp01550.436","100");
+parseFile("header.436t","ascp01550.436t","100");
+parseFile("header.438","ascp01550.438","100");
+parseFile("header.438t","ascp01550.438t","100");
+
+
+
 print "]}\r\n";
 
 sub parseFile(){
