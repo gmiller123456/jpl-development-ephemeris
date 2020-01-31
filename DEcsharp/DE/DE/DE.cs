@@ -65,6 +65,101 @@ namespace DE
         }
     }
 
+    class JPLSeries
+    {
+
+        string name;
+        int seriesOffset;
+        int numberOfProperties;
+        int numberOfCoefficients;
+        int numberOfSubIntervals;
+
+        public JPLSeries(string name, int offset, int numberOfProperties, int numberOfCoefficients, int numberOfSubIntervals)
+        {
+            this.name = name;
+            this.seriesOffset = offset - 1;
+            this.numberOfProperties = numberOfProperties;
+            this.numberOfCoefficients = numberOfCoefficients;
+            this.numberOfSubIntervals = numberOfSubIntervals;
+        }
+
+        public double[] getAllPropertiesForSeries(double JD, double[] coefficients, int blockOffset)
+        {
+
+            double startJD = coefficients[0 + blockOffset];
+            double endJD = coefficients[1 + blockOffset];
+            double blockDuration = endJD - startJD;
+            double subintervalDuration = blockDuration / this.numberOfSubIntervals;
+            int subintervalSize = this.numberOfCoefficients * this.numberOfProperties;
+            int subintervalNumber = (int)Math.Floor((JD - startJD) / subintervalDuration);
+            double subintervalStart = subintervalDuration * subintervalNumber;
+            double subintervalEnd = subintervalDuration * subintervalNumber + subintervalDuration;
+
+            //Normalize time variable (x) to be in the range -1 to 1 over the given subinterval
+            //If using two doubles for JD, this is where the two parts should be combined:
+            //e.g. jd=(JD[0]-(startJD+subintervalStart))+JD[1]
+            double jd = JD - (startJD + subintervalStart);
+            double x = (jd / subintervalDuration) * 2 - 1;
+
+            double[] properties = { 0, 0, 0, 0, 0, 0 };
+            for (int i = 0; i < this.numberOfProperties; i++)
+            {
+                int offset = blockOffset + this.seriesOffset + i * this.numberOfCoefficients + subintervalSize * subintervalNumber;
+                double[] t = this.computePolynomial(x, coefficients, offset);
+                properties[i] = t[0];
+
+                double velocity = t[1];
+                velocity = velocity * (2.0 * this.numberOfSubIntervals / blockDuration);
+                properties[i + this.numberOfProperties] = velocity;
+            }
+            return properties;
+        }
+
+        double[] computePolynomial(double x, double[] coefficients, int offset)
+        {
+
+            // Equation 14.20 from Explanetory Supplement 3rd ed.
+            double[] t = new double[this.numberOfCoefficients];
+            t[0] = 1.0;
+            t[1] = x;
+
+            for (int n = 2; n < this.numberOfCoefficients; n++)
+            {
+                double tn = 2 * x * t[n - 1] - t[n - 2];
+                t[n] = tn;
+            }
+
+            //Multiply the polynomial by the coefficients.
+            //Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
+            double position = 0;
+            for (int i = this.numberOfCoefficients - 1; i > -1; i--)
+            {
+                position += coefficients[i + offset] * t[i];
+            }
+
+            //Compute velocity (just the derivitave of the above)
+            double[] v = new double[this.numberOfCoefficients];
+            v[0] = 0.0;
+            v[1] = 1.0;
+            v[2] = 4 * x;
+            for (int n = 3; n < this.numberOfCoefficients; n++)
+            {
+                v[n] = 2 * x * v[n - 1] + 2 * t[n - 1] - v[n - 2];
+            }
+
+            double velocity = 0;
+            for (int i = this.numberOfCoefficients - 1; i > -1; i--)
+            {
+                velocity += v[i] * coefficients[i + offset];
+            }
+
+            double[] r = new double[2];
+            r[0] = position;
+            r[1] = velocity;
+            return r;
+        }
+    }
+
     class FileManager
     {
         int name;
@@ -200,93 +295,6 @@ namespace DE
             }
 
             return year;
-        }
-    }
-
-    class JPLSeries {
-
-        string name;
-        int seriesOffset;
-        int numberOfProperties;
-        int numberOfCoefficients;
-        int numberOfSubIntervals;
-
-        public JPLSeries(string name, int offset, int numberOfProperties, int numberOfCoefficients, int numberOfSubIntervals)
-        {
-            this.name = name;
-            this.seriesOffset = offset-1;
-            this.numberOfProperties = numberOfProperties;
-            this.numberOfCoefficients = numberOfCoefficients;
-            this.numberOfSubIntervals = numberOfSubIntervals;
-        }
-
-        public double[] getAllPropertiesForSeries(double JD, double[] coefficients, int blockOffset) {
-
-            double startJD = coefficients[0 + blockOffset];
-            double endJD = coefficients[1 + blockOffset];
-            double blockDuration = endJD - startJD;
-            double subintervalDuration = blockDuration / this.numberOfSubIntervals;
-            int subintervalSize = this.numberOfCoefficients * this.numberOfProperties;
-            int subintervalNumber = (int)Math.Floor((JD - startJD) / subintervalDuration);
-            double subintervalStart = subintervalDuration * subintervalNumber;
-            double subintervalEnd = subintervalDuration * subintervalNumber + subintervalDuration;
-
-            //Normalize time variable (x) to be in the range -1 to 1 over the given subinterval
-            //If using two doubles for JD, this is where the two parts should be combined:
-            //e.g. jd=(JD[0]-(startJD+subintervalStart))+JD[1]
-            double jd = JD - (startJD + subintervalStart);
-            double x = (jd / subintervalDuration) * 2 - 1;
-
-            double[] properties = { 0, 0, 0, 0, 0, 0 };
-            for (int i = 0; i < this.numberOfProperties; i++) {
-                int offset = blockOffset + this.seriesOffset + i * this.numberOfCoefficients + subintervalSize * subintervalNumber;
-                double[] t = this.computePolynomial(x, coefficients, offset);
-                properties[i] = t[0];
-
-                double velocity = t[1];
-                velocity = velocity * (2.0 * this.numberOfSubIntervals / blockDuration);
-                properties[i + this.numberOfProperties] = velocity;
-            }
-            return properties;
-        }
-
-        double[] computePolynomial(double x, double[] coefficients, int offset) {
-
-            // Equation 14.20 from Explanetory Supplement 3rd ed.
-            double[] t = new double[this.numberOfCoefficients];
-            t[0] = 1.0;
-            t[1] = x;
-
-            for (int n = 2; n < this.numberOfCoefficients; n++) {
-                double tn = 2 * x * t[n - 1] - t[n - 2];
-                t[n] = tn;
-            }
-
-            //Multiply the polynomial by the coefficients.
-            //Loop through coefficients backwards (from smallest to largest) to avoid floating point rounding errors
-            double position = 0;
-            for (int i = this.numberOfCoefficients - 1; i > -1; i--) {
-                position += coefficients[i+offset] * t[i];
-            }
-
-            //Compute velocity (just the derivitave of the above)
-            double[] v = new double[this.numberOfCoefficients];
-            v[0] = 0.0;
-            v[1] = 1.0;
-            v[2] = 4 * x;
-            for (int n = 3; n < this.numberOfCoefficients; n++) {
-                v[n] = 2 * x * v[n - 1] + 2 * t[n - 1] - v[n - 2];
-            }
-
-            double velocity = 0;
-            for (int i = this.numberOfCoefficients - 1; i > -1; i--) {
-                velocity += v[i] * coefficients[i+offset];
-            }
-
-            double[] r = new double[2];
-            r[0] = position;
-            r[1] = velocity;
-            return r;
         }
     }
 }

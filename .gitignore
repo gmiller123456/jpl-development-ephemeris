@@ -1,4 +1,4 @@
 DEcsharp/DE/.vs
-DEcsharp\DE\DE\bin
-DEcsharp\DE\DE\obj
-DEcsharp\DE\DE\Properties
+DEcsharp/DE/DE/bin/*
+DEcsharp/DE/DE/obj/*
+DEcsharp/DE/DE/Properties/*
