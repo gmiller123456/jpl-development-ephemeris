@@ -67,7 +67,6 @@ namespace DE
 
     class JPLSeries
     {
-
         string name;
         int seriesOffset;
         int numberOfProperties;
@@ -85,7 +84,6 @@ namespace DE
 
         public double[] getAllPropertiesForSeries(double JD, double[] coefficients, int blockOffset)
         {
-
             double startJD = coefficients[0 + blockOffset];
             double endJD = coefficients[1 + blockOffset];
             double blockDuration = endJD - startJD;
@@ -117,7 +115,6 @@ namespace DE
 
         double[] computePolynomial(double x, double[] coefficients, int offset)
         {
-
             // Equation 14.20 from Explanetory Supplement 3rd ed.
             double[] t = new double[this.numberOfCoefficients];
             t[0] = 1.0;
