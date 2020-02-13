@@ -171,6 +171,8 @@ namespace DE
         int daysPerBlock;
         int coefficientsPerBlock;
         static string baseDir = @"D:\JPL DE\ascii\";
+        //static string baseDir = @"C:\prog\temp\jpl-development-ephemeris\";
+        
 
         public FileManager(int name, string fileBaseName, int yearsPerFile, int daysPerBlock, int coefficientsPerBlock)
         {
@@ -252,7 +254,8 @@ namespace DE
 
             year = (int)Math.Floor((double)((year - this.fileBase) / this.yearsPerFile)) * this.yearsPerFile + this.fileBase;
 
-            string fileName = String.Format("asc" + pm + "{0," + this.fileNamePad + "}." + this.name, year);
+            //string fileName = String.Format("asc" + pm + "{0," + this.fileNamePad + "}." + this.name, year);
+            string fileName = "asc" + pm + year.ToString("D" + this.fileNamePad) + "." + this.name;
             this.coefficients=this.loadFile(fileName);
         }
 
