@@ -9,7 +9,7 @@ namespace DEtest
     {
         static void Main(string[] args)
         {
-            simpleTest();
+            DE.Testpo.run();
             Console.WriteLine("Done");
             Console.ReadLine();
         }

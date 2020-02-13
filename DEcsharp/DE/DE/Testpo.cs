@@ -11,15 +11,16 @@ namespace DE
     class Testpo
     {
 
-        int tests = 0;
-        int fail = 0;
-        int skipped = 0;
-        DE de;
+        static int tests = 0;
+        static int fail = 0;
+        static int skipped = 0;
+        static DE de;
+        static string baseDir=@"D:\JPL DE\ascii\";
 
         const double au = 0.149597870691000015E+09;
-        int[] map = { 0, 0, 1, 13, 3, 4, 5, 6, 7, 8, 9, 10, 12, 2, 11, 12, 0, 14 };
+        static int[] map = { 0, 0, 1, 13, 3, 4, 5, 6, 7, 8, 9, 10, 12, 2, 11, 12, 0, 14 };
 
-        double get(int series, double jd, int x) {
+        static double get(int series, double jd, int x) {
             if (series == 12 || series == 0) {
                 return 0;
             }
@@ -48,7 +49,9 @@ namespace DE
             return b[x - 1];
         }
 
-        void testpo(int deNumber, int year, int month, int day, double jd, int t, int c, int x, double expectedValue) {
+
+        static void testpo(int deNumber, int year, int month, int day, double jd, int t, int c, int x, double expectedValue) {
+            //Console.WriteLine($"{deNumber} {year} {month} {day} {jd} {t} {c} {x} {expectedValue}");
 
             double t1 = get(t, jd, x);
             double t2 = get(c, jd, x);
@@ -70,7 +73,7 @@ namespace DE
 
             tests++;
         }
-        void parseTestCase(string s) {
+        static void parseTestCase(string s) {
 
             int de = int.Parse(s.Substring(0,3));
             int year = int.Parse(s.Substring(5,4));
@@ -95,13 +98,15 @@ namespace DE
             }
         }
 
-        void runTestFile(string filename) {
+        static void runTestFile(string filename) {
             System.IO.StreamReader f = new System.IO.StreamReader(filename);
 
             string l = f.ReadLine();
-            while (!l.Substring(0,3).Equals("EOT")) {
+            while (l.Length<3 || !l.Substring(0,3).Equals("EOT")) {
                 l = f.ReadLine();
             }
+
+            l = f.ReadLine();
 
             while (l != null) {
                 parseTestCase(l);
@@ -110,15 +115,15 @@ namespace DE
             f.Close();
         }
 
-        void runVersionTest(object[] data) {
+        static void runVersionTest(object[] data) {
             de = new DE(data);
 
-            runTestFile("de" + data[0] + "/testpo." + data[0]);
+            runTestFile(baseDir+"de" + data[0] + "/testpo." + data[0]);
             // testpo(102, -1410,6,1, 1206206.5, 11, 12,  2,        0.00063638077271601110);
             // testpo(102, -1399,2,1, 1210104.5,  1,  6,  3,        3.82189376166741200000);
         }
 
-        void run() {
+        public static void run() {
             /*
             object[,] data = {
                 {  "102",      "ascm0200.102",  300,   773,  "-1410-APR-16-00:00:00",   "3002-DEC-22-00:00:00",     1206160.50,     2817872.50,  64, 20,    "mercury",      "venus",        "emb",       "mars",    "jupiter",     "saturn",     "uranus",    "neptune",      "pluto",       "moon",        "sun",   "nutation",  "libration",   "mantle V",     "TT-TDB",     "future",     "future",     "future",     "future",     "future",    3,   93,  138,  228,  258,  285,  309,  333,  351,  369,  729,  774,  774,  774,  774,  774,  774,  774,  774,  774,   15,   15,   15,   10,    9,    8,    8,    6,    6,   15,   15,    0,    0,    0,    0,    0,    0,    0,    0,    0,    2,    1,    2,    1,    1,    1,    1,    1,    1,    8,    1,    0,    0,    0,    0,    0,    0,    0,    0,    0,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    2,    3,    3,    1,    0,    0,    0,    0,    0, "end" },
@@ -142,7 +147,15 @@ namespace DE
                 {  "432",     "ascp01550.432",   50,   938,   "1549-DEC-21 00:00:00",   "2650-JAN-25 00:00:00",     2287184.50,     2688976.50,  32, 20,    "mercury",      "venus",        "emb",       "mars",    "jupiter",     "saturn",     "uranus",    "neptune",      "pluto",       "moon",        "sun",   "nutation",  "libration",   "mantle V",     "TT-TDB",     "future",     "future",     "future",     "future",     "future",    3,  171,  231,  309,  342,  366,  387,  405,  423,  441,  753,  819,  819,  939,  939,  939,  939,  939,  939,  939,   14,   10,   13,   11,    8,    7,    6,    6,    6,   13,   11,    0,   10,    0,    0,    0,    0,    0,    0,    0,    4,    2,    2,    1,    1,    1,    1,    1,    1,    8,    2,    0,    4,    0,    0,    0,    0,    0,    0,    0,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    3,    2,    3,    3,    1,    0,    0,    0,    0,    0, "end"},
             };
             */
-            object[] temp = { "405", "ascp1600.405", 20, 1018, "1599 DEC 09 00:00:00", "2201 FEB 20 00:00:00", 2305424.50, 2525008.50, 32, 20, "mercury", "venus", "emb", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "moon", "sun", "nutation", "libration", "mantle V", "TT-TDB", "future", "future", "future", "future", "future", 3, 171, 231, 309, 342, 366, 387, 405, 423, 441, 753, 819, 899, 899, 899, 899, 899, 899, 899, 899, 14, 10, 13, 11, 8, 7, 6, 6, 6, 13, 11, 10, 10, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 1, 1, 1, 1, 1, 1, 8, 2, 4, 4, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 1, 0, 0, 0, 0, 0, "end" };
+
+
+            //object[] temp = { "405", "ascp1600.405", 20, 1018, "1599 DEC 09 00:00:00", "2201 FEB 20 00:00:00", 2305424.50, 2525008.50, 32, 20, "mercury", "venus", "emb", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "moon", "sun", "nutation", "libration", "mantle V", "TT-TDB", "future", "future", "future", "future", "future", 3, 171, 231, 309, 342, 366, 387, 405, 423, 441, 753, 819, 899, 899, 899, 899, 899, 899, 899, 899, 14, 10, 13, 11, 8, 7, 6, 6, 6, 13, 11, 10, 10, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 1, 1, 1, 1, 1, 1, 8, 2, 4, 4, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 1, 0, 0, 0, 0, 0, "end" };
+            object[] temp = { "432", "ascp01550.432", 50, 938, "1549-DEC-21 00:00:00", "2650-JAN-25 00:00:00", 2287184.50, 2688976.50, 32, 20, "mercury", "venus", "emb", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "moon", "sun", "nutation", "libration", "mantle V", "TT-TDB", "future", "future", "future", "future", "future", 3, 171, 231, 309, 342, 366, 387, 405, 423, 441, 753, 819, 819, 939, 939, 939, 939, 939, 939, 939, 14, 10, 13, 11, 8, 7, 6, 6, 6, 13, 11, 0, 10, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 1, 1, 1, 1, 1, 1, 8, 2, 0, 4, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 1, 0, 0, 0, 0, 0, "end" };
+            de = new DE(temp);
+
+            //testpo(405, 1620, 1, 1, 2312752.5, 15, 0, 2, 0.4059670617925);
+            //testpo(405, 2200, 1, 1, 2524593.5, 1, 5, 1, -4.3720415126458);
+            //testpo(405, 2200, 2, 1, 2524624.5, 3, 6, 6, -0.006098120741);
             runVersionTest(temp);
 
             Console.WriteLine($"Tests ran:{tests} Failed:{fail} Skipped:{skipped}");

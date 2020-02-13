@@ -23,7 +23,7 @@ namespace DE
 
         public DE(object[] data) {
 
-            this.name = (int)data[0];
+            this.name = int.Parse((string)data[0]);
             this.start = (double)data[6];
             this.end = (double)data[7];
             this.daysPerBlock = (int)data[8];
@@ -170,6 +170,7 @@ namespace DE
         internal double[] coefficients;
         int daysPerBlock;
         int coefficientsPerBlock;
+        static string baseDir = @"D:\JPL DE\ascii\";
 
         public FileManager(int name, string fileBaseName, int yearsPerFile, int daysPerBlock, int coefficientsPerBlock)
         {
@@ -199,7 +200,7 @@ namespace DE
         {
             double[] coefficients = new double[this.daysPerBlock * (this.coefficientsPerBlock + 2) * this.yearsPerFile * 366];
 
-            System.IO.StreamReader f = new System.IO.StreamReader("../../../../../de" + this.name + "/" + filename);
+            System.IO.StreamReader f = new System.IO.StreamReader(baseDir+"de" + this.name + "/" + filename);
             int count = 0;
             string l = f.ReadLine();
             while (l != null)
@@ -235,7 +236,8 @@ namespace DE
 
         public void loadFileForJD(double jd)
         {
-            if (jd >= this.chunkStart && jd <= this.chunkEnd)
+
+            if (jd >= this.chunkStart && jd < this.chunkEnd)
             {
                 return ;
             }
