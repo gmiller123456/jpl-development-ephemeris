@@ -27,7 +27,7 @@ namespace DE
             this.start = (double)data[6];
             this.end = (double)data[7];
             this.daysPerBlock = (int)data[8];
-            this.coefficientsPerBlock = (int)data[3] + 2;  //+2 because each block is padded with two zeros
+            this.coefficientsPerBlock = (int)data[3] + 3-(int)data[3]%3;  //add mod 3 because each block is padded with zeros to make 3 numbers per line
             this.yearsPerFile = (int)data[2];
 
             fileManager = new FileManager(this.name,(string)data[1], this.yearsPerFile, this.daysPerBlock, this.coefficientsPerBlock);
@@ -248,14 +248,15 @@ namespace DE
             string pm = "p";
             if (year < 0)
             {
-                year = Math.Abs(year);
                 pm = "m";
             }
 
-            year = (int)Math.Floor((double)((year - this.fileBase) / this.yearsPerFile)) * this.yearsPerFile + this.fileBase;
+            if (year < this.fileBase && year>0) { year -= this.yearsPerFile; }
+            int year2 = (int)Math.Truncate((double)(((double)year - (double)this.fileBase) / (double)this.yearsPerFile)) * this.yearsPerFile + this.fileBase;
 
             //string fileName = String.Format("asc" + pm + "{0," + this.fileNamePad + "}." + this.name, year);
-            string fileName = "asc" + pm + year.ToString("D" + this.fileNamePad) + "." + this.name;
+            year2 = Math.Abs(year2);
+            string fileName = "asc" + pm + year2.ToString("D" + this.fileNamePad) + "." + this.name;
             this.coefficients=this.loadFile(fileName);
         }
 
