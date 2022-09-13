@@ -1,0 +1,965 @@
+!$$SOF (ssd)       JPL/Horizons Execution Control VARLIST
+!                           June 14, 2018
+! ftp://ssd.jpl.nasa.gov/pub/ssd/horizons_batch_example.long
+!
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!
+! 1) First line in job (this file) MUST begin !$$SOF
+! 2) Last line in job (this file) MUST begin !$$EOF
+! 3) Lines in between must be variable assignment, blank, or
+!     start with ! (for comments)
+! 4) Variable assignments should be enclosed in quotes: 
+!     VARIABLE= 'value...'
+! 5) Detailed explanation of job submittal is at end of 
+!     this file.
+!
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! EMAIL_ADDR sets e-mail address output is returned to. 
+! Enclose in quotes. Null assignment uses mailer return 
+! address.
+
+ EMAIL_ADDR = ' '  
+
+! COMMAND for program to execute OR target object to select
+! for data & ephemeris output. For program documentation 
+! explaining the allowed commands and syntax, set to '?' 
+! (brief) or ! '?!' (long explanation). Must be non-null. 
+!
+! Examples (singular requests): 
+!
+!    COMMAND= '199' 
+! or
+!
+!    COMMAND= '1;' 
+! or
+!
+!    COMMAND= 'A<2.5; IN>7.8; STYP=S;'
+!
+! NOTE: For true-batch mode, up to 200 commands/targets may
+! be specified in the same file. Each command will be 
+! processed in the order specified.
+!
+! Examples (multiple requests):
+! 
+!    COMMAND= 'A < 2.5; IN > 7.8; STYP=S;' '1;' '499'
+!             '2;'
+!             '3;'
+!             '601' 'DES= 2012 DA14;'              
+!
+! In the above, a single e-mailed request will perform the
+! specified search, then generate results for small-body #1 
+! (Ceres), Mars (499), Pallas, Vesta, the Saturnian 
+! satellite Mimas (601), then asteroid 2012 DA14. 
+!
+! There can be more than one value on the line, or one per 
+! line. Line length should be less than 80 characters. List 
+! is space or comma delimited. "COMMAND=" is used only once,
+! so it does not supercede a previous COMMAND assignment.
+
+ COMMAND    = '301'
+
+! OBJ_DATA toggles return of object summary data. 
+! Values: YES or NO
+
+ OBJ_DATA   = 'YES' 
+
+! MAKE_EPHEM toggles generation of ephemeris, if possible. 
+! Values: YES or NO.
+!
+! NOTE: When generating a close-approach table, MAKE_EPHEM 
+!  must be 'YES'. See 'TABLE_TYPE'.
+
+ MAKE_EPHEM = 'YES' 
+
+! TABLE_TYPE selects type of table to generate, if possible.
+! Values: OBSERVER, ELEMENTS, VECTORS, APPROACH 
+! (or unique abbreviation of those values: O, E, V, A).
+
+ TABLE_TYPE = 'OBS' 
+
+! CENTER selects coordinate origin. Can be observing site 
+! name, ID#, 'coord' (which uses values stored in 
+! "SITE_COORD" and "COORD_TYPE") or 'geo'  (geocentric). 
+!
+! There are 1900+ Earth sites on file, so be as specific as 
+! possible or you will get a return listing of possible 
+! matching sites and will need to re-send. 
+!
+! ID code numbers are unique, if you know them. They can 
+! be obtained from a string search (i.e. CENTER='A*' lists 
+! all site names containing the letter 'A' in any position).
+!
+! Here are examples for sites on bodies other than Earth:
+!
+!  Code         Meaning
+!  ------------ ------------------------------------------
+!  Viking@499   List all defined Viking lander sites 
+!  Viking 1@499 Select Viking 1 landing site on Mars
+!  1 @301       Site #1 on the Moon
+!  500 @ 501    Io body center
+!  3 @ 499 span  Site #3 on Mars </
+!
+! The asterisk ('*') can be used to generate lists<div style="
+!  Code         Meaning
+!  ------------ ------------------------------------------
+!    *@301      List all predefined sites on the Moon
+!    *@Phobos   List all predefined sites on moon Phobos
+!    *@399      List all predefined sites on Earth
+!    *@         List all predefined sites on Earth
+!    *          List all predefined sites on Earth
+!    *          List all major bodies (element table only)
+!
+! There are a several ways to request a body-centered site
+! for a major body. 
+!
+!    Code         Meaning
+!    ------------ ----------------------------------------
+!    500@601      Mimas body center 
+!    geo@601            " 
+!      g@601            " 
+!      g@Mimas          "
+!    500@Deimos   Deimos body center
+!    geo          Earth Geocenter
+!      g@399      Earth Geocenter     
+!
+! For sites with IAU rotation models, topocentric sites 
+! may be input by the user as follows (used with SITE_COORD
+! and COORD_TYPE variables):
+! 
+!    Code         Meaning
+!    ------------ -----------------------------------------
+!     c @ Europa  User defined location on satellite Europa
+!    coord @ 502  (same) 
+ 
+ CENTER     = 'Geocentric'
+
+! REF_PLANE table reference plane; ECLIPTIC, FRAME or 
+! 'BODY EQUATOR' (or abbreviation [E,F,B]).  Used for 
+! TABLE_TYPE=VECTOR or TABLE_TYPE=ELEM only.
+
+ REF_PLANE  = 'ECLIPTIC'
+
+! COORD_TYPE selects type of user coordinates in SITE_COORD.
+! Used only when CENTER = 'coord'. 
+! Values: GEODETIC or CYLINDRICAL
+
+ COORD_TYPE = 'GEODETIC'
+
+! SITE_COORD sets coordinates of type COORD_TYPE. If 
+! COORD_TYPE=GEODETIC, then SITE_COORD is assumed to be the 
+! set {E. long., lat, height} (KM and DEG). 
+!
+! If COORD_TYPE=CYCLINDRICAL, SITE_COORD is assumed to be 
+! {E.lon,Dxy,Dz} also in KM and DEG. Quotes ALWAYS 
+! necessary here! See main doc for more details.
+
+ SITE_COORD = '0,0,0'
+
+! START_TIME specifies ephemeris start time 
+! (i.e. YYYY-MMM-DD {HH:MM} {UT/TT}) ... where braces "{}" 
+! denote optional inputs. See program user's guide for 
+! lists of the numerous ways to specify times. Time zone 
+! offsets can be set. For example, '1998-JAN-1 10:00 UT-8' 
+! would produce a table in Pacific Standard Time. 'UT+00:00'
+! is the same as 'UT'. Offsets are not applied to TT 
+! (Terrestrial Time) tables. See TIME_ZONE variable also.
+
+ START_TIME = '2001-JAN-1 10:00'
+
+! STOP_TIME specifies ephemeris stop time 
+! (i.e. YYYY-MMM-DD {HH:MM}).
+
+ STOP_TIME  = '2001-JAN-2' 
+
+! STEP_SIZE gives ephemeris output print step in form: 
+!
+!                integer# {units} {mode} 
+!
+! where, when TABLE_TYPE= 'OBS', {mode} can be one of 
+! these switches:
+!
+!  Rise-transit-set print-only:
+!    TVH - True visual horizon (include horizon dip+refract)
+!    GEO - Geometric horizon   (include refraction)
+!    RAD - Radar horizon       (geometric horizon, NO rfrct)
+!
+!    Geometric horizon refers to the horizon defined by the 
+!    plane perpendicular to the local zenith. 
+!
+!  Time-varying output (angular stepping):
+!    VAR - Turn on time-varying output and use approximate 
+!          angular motion criteria for output instead. 
+!          Angular rangecan be 60 to 3600 (arcsec). 
+!
+!    There is no {units} specification for time-varying 
+!    mode, it is implicitly arcseconds.
+!
+!  Unitless step-size:
+!    If an integer without units is given, the time-span 
+!    between start and stop times is divided into that many
+!    equally spaced steps. For exmaple, if start and stop 
+!    times are 1 hour (3600 seconds) apart, requesting an 
+!    output step of '3600' will output every second, '240' 
+!    will ouput every 15 seconds (3600/15=240), etc.
+!
+! Examples: '12 hours' 
+!           '7 days' 
+!           '60 minutes' 
+!           '5m TVH' 
+!           '2m GEO'
+!           'VAR 600' (output when object moves 600 arcsec) 
+!           '10' (output at 10 equally spaced times between  
+!                 start and stop)
+
+ STEP_SIZE  = '60 min'
+
+! TLIST allows users to specify up to 10000 discrete times 
+! individually. If TLIST is used, START_TIME, STOP_TIME and
+! STEP_SIZE are ignored. TLIST is a list of either "Julian
+! Day Numbers" (JD) or "Modified Julian Day Numbers" 
+! (MJD; days since Nov 17, 1858 (JD 2400000.5)). 
+!
+! In either case, the input is one or more real numbers. 
+! The program puts TLIST in ascending chronological order 
+! and determines whether it is JD or MJD based on smallest
+! day number.  Example usage:
+! 
+!   TLIST= '2451454.8937833' '2451455.11256351'
+!          '2451456.45576728'
+!          '2451459.65778822'
+!          '2451458.97618331'
+!          '2451459.72787832'
+!          '2451462.25656722'
+!
+!   Note that there can be more than one value on the line 
+!   OR one per line. Line length should be less than 80 
+!   characters. List is space or comma delimited. "TLIST="
+!   is used only once so it does not override any previous 
+!   assignment in the command file.
+
+ TLIST = 200*' '
+
+! QUANTITIES is used only when TABLE_TYPE=OBS. It is a list 
+! of desired output quantity codes. If multiple quantities 
+! desired, separate with commas and enclose in quotes...
+!
+!  Select output quantities by the numeric codes below, 
+!  SEPARATED BY COMMAS. "*" denotes output affected by 
+!  refraction model, ">" indicates statistical values
+!  derived from a covariance matrix.
+!
+!   1. Astrometric RA & DEC  
+!  *2. Apparent RA & DEC    
+!   3.   Rates; RA & DEC    
+!  *4. Apparent AZ & EL     
+!   5.   Rates; AZ & EL     
+!   6. Satellite X & Y, position angle 
+!   7. Local apparent sidereal time 
+!   8. Airmass              
+!   9. Visual magnitude & Surf Brightness
+!  10. Illuminated fraction 
+!  11. Defect of illumination
+!  12. Satellite angle of separation/visibility code 
+!  13. Target angular diameter
+!  14. Observer sub-longtude & sub-latitude 
+!  15. Sun sub-longitude & sub-latitude
+!  16. Sub Sun Posiition Angle & Distance
+!  17. North Pole Position Angle & Distance
+!  18. Heliocentric ecliptic longitude & latitude
+!  19. Heliocentric range & range rate
+!  20. Observer range & range rate
+!  21. One-Way Light-Time
+!  22. Speed wrt Sun & observer
+!  23. Sun-Observer-Targ ELONGATION angle
+!  24. Sun-Target-Observer ~PHASE angle
+!  25. Targ-Observer-Moon/Illumination%
+!  26. Observer-Primary-Target angle
+!  27. Position Angle; radius & -velocity 
+!  28. Orbit plane angle
+!  29. Constellation ID
+!  30. Delta-T (TDB - UT)
+! *31. Observer-centered ecliptic longitude & latitude
+!  32. North pole RA & DEC
+!  33. Galactic latitude
+!  34. Local apparent SOLAR time
+!  35. Earth->Site light-time
+! >36. RA & DEC uncertainty
+! >37. Plane-of-Sky (POS) error ellipse
+! >38. Plane-of-Sky (POS) uncertainty (RSS)
+! >39. Range & Range-rate sigma
+! >40. Doppler/delay sigmas
+!  41. True anomaly angle
+!  42. Local apparent hour angle
+!  43. PHASE angle & bisector
+!
+! ... OR select ONE of the pre-defined alphabetic formats:
+!
+!   A = All quantities             B = Geocentric only        
+!   C = Small-body geocentric      D = Small-body topocentric
+!   E = Spacecraft geocentric      F = Spacecraft topocentric
+!
+! The alphabetic assignments specifically mean:
+! A = 1-43                         B = 1-3,6,9-33,41,43
+! C = 1-3,9-11,13,18-29,33,36-41,  D = 1-5,8-10,11,13,18-29,
+!      43                               33-34,36-43
+! E = 1-3,8,10,18-25,29,41,43      F = 1-5,8,10,18-25,29,
+!                                       41-43
+!
+!  (NOTE: The dash notation "1-5", etc., above is used only
+!         for compactness. Each quantity must be specified 
+!         individually, not as a range. That is, '1,2,3,4,5'
+!         NOT '1-5').
+
+ QUANTITIES = 'A'
+
+! REF_SYSTEM specifies reference frame for any geometric and
+! astrometric quantities. Values: 'J2000' for ICRF/J2000.0, 
+! or 'B1950' for FK4/B1950.0
+
+ REF_SYSTEM = 'J2000'
+
+! OUT_UNITS selects output units when TABLE_TYPE=VECTOR or 
+! ELEMENT. Values can be KM-S, AU-D, or KM-D, indicating 
+! distance and time units.
+
+ OUT_UNITS  = 'KM-S'
+
+! VEC_TABLE selects table format when TABLE_TYPE=VECTOR. 
+! Values can be a single integer from 1 to 6. 
+!
+!  Quantities Output:
+!    1 = Position components {x,y,z} only
+!         (with optional statistical request codes)
+!    2 = State vector {x,y,z,Vx,Vy,Vz}
+!         (with optional statistical request codes)
+!  * 3 = State vector + 1-way light-time + range + range-rate
+!    4 = Position     + 1-way light-time + range + range-rate
+!    5 = Velocity components {vx, vy, vz} only
+!    6 = 1-way light-time + range + range-rate
+!
+! Modifier codes are accepted for tables 1 and 2 to trigger 
+! output of formal statistical uncertainties when available 
+! (ASTEROIDS AND COMETS ONLY). 
+!
+! Available modifier codes for options 1 and 2:
+! 
+!   x= XYZ uncertainties (ICRF or FK4/B1950)
+!   a= ACN uncertainties (along-track, cross-track, normal)
+!   r= RTN uncertainties (radial, transverse, normal)
+!   p= POS uncertainties (plane-of-sky; radial, RA, and 
+!                         DEC components)
+!      
+! For example, VEC_TABLE= '1xa' returns position components 
+! along with their uncertainties, and with uncertainties in 
+! the ACN system also. 
+!
+! VEC_TABLE= '2xarp' returns position and velocity, with 
+! uncertainties in all four coordinate systems.
+
+ VEC_TABLE = '3' 
+
+! VEC_CORR selects level of correction to output vectors 
+! when TABLE_TYPE=VECTOR. Values are NONE (geometric 
+! states), 'LT' (astrometric states) or 'LT+S' (astrometric
+! states corrected for stellar aberration).
+
+ VEC_CORR  = 'NONE'
+
+! CAL_FORMAT selects type of date output when 
+! TABLE_TYPE=OBSERVER. Values can be CAL, JD or BOTH.
+
+ CAL_FORMAT = 'CAL'
+
+! ANG_FORMAT selects RA/DEC output when TABLE_TYPE=OBSERVER.
+! Values can be HMS or DEG. In a couple instances such as
+! local hour angle and sidereal time output, "DEG" will 
+! instead merely toggle output in decimal hours instead of 
+! sexagesimal hours-min-sec; the units will remains "hours".
+
+ ANG_FORMAT = 'HMS'
+
+! APPARENT toggles refraction correction of apparent 
+! coordinates if users set TABLE_TYPE=OBSERVER. Values can 
+! be "AIRLESS" or "REFRACTED".
+
+ APPARENT   = 'AIRLESS'
+
+! TIME_DIGITS controls output precision. Values can be 
+! "MINUTES", "SECONDS", or "FRACSEC". Input START_TIME is 
+! initially rounded to this specified level and the 
+! ephemeris is then stepped through at the STEP_SIZE 
+! interval.
+!
+! This allows three output time formats: HH:MM or HH:MM:SS
+! or HH:MM:SS.fff. The variable is ignored for 
+! TABLE_TYPE=OBS when STEP_SIZE is time-varying (angle 
+! based output criteria).
+
+ TIME_DIGITS = 'MIN'
+
+! TIME_ZONE specifies local civil time offset, relative 
+! to UT, in the format {s}HH{:MM}. Used only for observer 
+! tables based on UT. For example, a setting of '-8' would 
+! generate a table in Pacific Standard Time, if a non-TT 
+! observer table is selected. North American standard time
+! (winter) zone corrections are as follows:
+! 
+!     Atlantic Standard Time (AST) =  UT-4 hours
+!     Eastern Standard Time  (EST) =  UT-5 hours
+!     Central Standard Time  (CST) =  UT-6 hours
+!     Mountain Standard Time (MST) =  UT-7 hours
+!     Pacific Standard Time  (PST) =  UT-8 hours
+! 
+! If daylight savings is in effect (summer), add one hour 
+! to above offsets. This can also be set using the 
+! START_TIME variable. 'UT+00:00' is UT.
+
+ TIME_ZONE   = '+00:00'
+
+! RANGE_UNITS sets the units on range quantities output when
+! TABLE_TYP=OBS (i.e. delta and r). Values may be 'AU' or 
+! 'KM'.
+
+ RANGE_UNITS = 'AU'
+
+! SUPPRESS_RANGE_RATE sets turns off output of delta-dot 
+! and rdot (range-rate) quantities when TABLE_TYP=OBS. 
+! Values may be 'YES' or 'NO'.
+
+ SUPPRESS_RANGE_RATE= 'NO'
+
+! ELEV_CUTOFF an integer from -90 to 90 degrees, used when
+! TABLE_TYPE=OBS to skip printout when object elevation is 
+! less than specified, or to set cut-off angle when 
+! RTS-only print is activated.
+
+ ELEV_CUT   = '-90'
+
+! SKIP_DAYLT toggles skipping of print-out when daylight 
+! at observing site. Used only when TABLE_TYPE=OBS. 
+! Values are YES or NO.
+
+ SKIP_DAYLT = 'NO'
+
+! SOLAR_ELONG sets bounds on output of requested quantities.
+! It contains two numbers, a minimum and maximum angle in 
+! degrees. When the target is outside the bounds, as seen 
+! by the user,  output is suspended. The default numeric 
+! pair "0,180" turns off the filtering function.  Used only
+! when TABLE_TYPE=OBS.
+
+ SOLAR_ELONG= "0,180"
+
+! AIRMASS select airmass cutoff; print-out is suspended if
+! relative optical airmass is greater than the single 
+! decimal value specified. Note than 1.0=zenith, 
+! 38.0 ~= local-horizon. If value is set >= 38.D0, this
+! turns OFF the filtering effect. Variable has effect only
+! when TABLE_TYPE=OBS. 
+
+ AIRMASS    = '38.0'
+
+! LHA_CUTOFF suspends print-out if local hour angle exceeds
+! a specified value in the domain 0.0 < X < 12.0. To restore
+! output (turn OFF the cut-off behavior), set X to 0.0 or 
+! 12.0. For example, a cut-off value of "1.5" will output 
+! table data only when the LHA is within +/- 1.5 angular 
+! hours of zenith meridian.
+
+ LHA_CUTOFF = '0.0'
+
+! ANG_RATE_CUTOFF suspends print-out if the total plane-of-sky
+! angular rate exceeds a specified value X in the domain 
+! 0.0 <= |X| <= 100000.0 arcseconds/hour.  
+!
+! For example, if a value of 108 is specified, output will
+! be suppressed when the linear angular rate of the target
+! with respect to the observer exceeds 108 arcseconds/hour.
+! If set to zero (0), the default, the cut-off function is 
+! disabled and output will be produced regardless of the 
+! angular rate. 
+ 
+ ANG_RATE_CUTOFF = '0.0'
+
+! EXTRA_PREC toggles additional output digits on RA/DEC 
+! when TABLE_TYPE=OBS. Values are YES or NO.
+
+ EXTRA_PREC = 'NO'
+
+! CSV_FORMAT toggles output of table in comma-separated
+! value format, suitable for import into spreadsheet 
+! programs.
+
+ CSV_FORMAT = 'NO'
+
+! VEC_LABELS toggles labelling of each vector component. 
+! That is, symbols like "X= ###### Y= ##### Z= ######" will
+! appear in the output. If CSV_FORMAT is YES, this parameter
+! is ignored. VEC_LABELS can be { YES, NO } 
+ 
+ VEC_LABELS = 'YES'
+
+! VEC_DELTA_T toggles output of the time-varying delta-T 
+! difference TDB-UT, relating the uniform TDB time-scale to 
+! the civil UT time-scale. Assigned value may be 'YES' or 'NO'
+ 
+ VEC_DELTA_T = 'NO' 
+
+! ELM_LABELS toggles labeling of each osculating element. 
+! That is, symbols like "A= ###### IN= ##### EC= ######" 
+! will appear in the output. If CSV_FORMAT is YES, this 
+! parameter is ignored. ELM_LABELS can be { YES, NO } 
+ 
+ ELM_LABELS = 'YES'
+
+! TP_TYPE is used only for osculating element tables. It
+! determines what time of periapsis time (Tp) is returned.
+! Values are either either ABSOLUTE (a Julian day number) 
+! or RELATIVE (number of days since or until) periapsis time. 
+
+ TP_TYPE = 'ABSOLUTE'
+
+! R_T_S_ONLY toggles print only at target rise/transit/set. 
+!
+! Values may be ... 
+!
+!    NO  - Turn off RTS-only print (output every time step)
+!    TVH - True visual horizon     (inc. horizon dip, rfrct)
+!    GEO - Geometric horizon       (inc. refraction)
+!    RAD - Radar horizon           (geometric, no rfrctn)
+!    YES - Same as TVH
+
+ R_T_S_ONLY = 'NO'
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! The next group of inputs are used ONLY when  requesting a 
+! close-approach table (TABLE_TYPE= 'APPROACH')
+!
+! CA_TABLE_TYPE may be 'STANDARD' or 'EXTENDED'.  Extended
+! close-approach tables include Julian Day Numbers. B-plane 
+! information is also output if there is a covariance for 
+! the object stored in the system database or specified with
+! user-input elements.
+
+ CA_TABLE_TYPE= 'STANDARD'
+
+! TCA3SG_LIMIT sets the maximum computed uncertainty in time
+! of Earth close-approach. The table is truncated if the
+! uncertainty exceeds this value.  This parameter is used 
+! only if a close-approach table is requested and a
+! covariance is defined for the object. Units are assumed
+! to be minutes. The default of +/- 10 days (14400 minutes)
+! is recommended. Larger settings are of dubious numeric 
+! value due to the typically non-linear error growth rate. 
+! 
+
+ TCA3SG_LIMIT = '14400'
+
+! CALIM_SB sets the spherical radius within which the 
+! nominal target must pass one of the perturbing asteroids 
+! (Ceres, Pallas, or Vesta) to activate close-approach 
+! flagging. Units are AU.
+!
+! The setting is used only for close-approach tables. The
+! single value is used for checking all pertuber asteroids.
+! The maximum allowed setting is 1.25 AU. 
+
+ CALIM_SB= '0.05'
+
+! CALIM_PL sets the spherical radius within which the target
+! must pass one of the planets (or the Moon) to activate 
+! close-approach flagging. Units are AU. The setting is 
+! consulted only for close-approach tables. Input values 
+! in a comma-separated list in the order of the planet from
+! the Sun, followed by the Moon in the 10th position.
+!
+! Input is automatically rounded to the nearest 0.001 AU.
+!
+!  DEFAULT settings are:
+!   Merc Venu Eart Mars Jupi Satu Nept Uran Plut Moon
+!   ---- ---- ---- ---- ---- ---- ---- ---- ---- -----
+!    0.1  0.1  0.1  0.1  1.0  1.0  1.0  1.0  0.1 0.003 (AU)
+!
+! In practice, there is rarely value in detecting more 
+! distant encounters. Changing the defaults is discouraged 
+! unless there is a specific application.
+!
+!  MAXIMUM values for any given body are shown below:
+!   Merc Venu Eart Mars Jupi Satu Nept Uran Plut Moon
+!   ---- ---- ---- ---- ---- ---- ---- ---- ---- -----
+!   0.13 0.25 0.33 0.50 1.73 3.17 6.39 9.99 9.99 0.003 (AU)
+!
+! These maximums are 1/3 of the body's mean distance from 
+! the Sun (except for Moon). Not all values need to be 
+! specified. For example, if changing the detection radius 
+! for Jupiter, only values for the first 5 planets need to 
+! be input. The rest will retain their default settings.
+
+ CALIM_PL= '.1, .1, .1, .1, 1.0, 1.0, 1.0, 1.0, .1, .003'
+
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! Two-Line Elements (TLEs) may be input to define an 
+! artificial orbiting satellite. They are used only when
+! COMMAND= 'TLE' (object is a target), or if CENTER equal 
+! to -9{NORAD_ID} is requested, where {NORAD_ID} is the
+! integer in columns 3-7 of the provided TLEs.
+!
+! TLEs must be supplied in standard format with starting and
+! ending quote marks enclosing the entire block. Name 
+! specification line(s) are optional. Up to 600 pairs (1200 
+! data lines) can be specified, but this limit is subject to 
+! change.
+!
+! Example assignment:
+!
+! TLE = ' 
+! SC-1
+! 1 87820U 11053A   11273.79990913  .00099611  00000-0  64461-3 0  9991
+! 2 87820 042.7843 189.7738 0014383 039.8647 002.5266 15.74868665   196
+! 1 87820U 11053A   11273.86983630 -.00085102 +00000-0 -55758-3 0  9998
+! 2 87820 042.7804 189.3478 0014258 040.7498 038.5752 15.74826749000204'
+ 
+ TLE = ' '
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! The inputs below are used ONLY when defining an arbitrary
+! body for the integrator (COMMAND=';') using HELIOCENTRIC 
+! ECLIPTIC OSCULATING ELEMENTS.
+!
+!     OBJECT ...  Name of user input object
+!     EPOCH ....  Julian Day Number (JDTDB) of osculating 
+!                   elements
+!     FRAME ....  Reference ecliptic frame of elements. 
+!                   'J2000' ... assumes IAU76/J2000 obliquity
+!                                of 84381.448 arcsec
+!                   'B1950' ... assumes FK4/B1950 obliquity 
+!                                of 84404.8362512 arcsec
+!      EC ......  Eccentricity
+!      QR ......  Perihelion distance in (AU)
+!      TP ......  Perihelion Julian date
+!      OM ......  Longitude of ascending node (DEGREES) 
+!                   wrt ecliptic
+!      W .......  Argument of perihelion (DEGREES) wrt 
+!                   ecliptic
+!      IN ......  Inclination (DEGREES) wrt ecliptic
+!
+! Instead of {TP, QR}, {MA, A} or {MA,N} may be specified 
+! (not both):
+!
+!      MA ......  Mean anomaly (DEGREES)
+!      A .......  Semi-major axis (AU)
+!      N .......  Mean motion (DEG/DAY)
+!
+! Note that if you specify elements with MA, {TP, QR} will 
+! be computed from them. The program always uses TP and QR.
+! 
+! OPTIONAL INPUTS
+! ---------------
+!      RAD ..... Object radius (KM)
+! 
+!  For asteroids, more OPTIONAL parameters can be given:
+!      H ....... Absolute magnitude parameter (asteroid)
+!      G ....... Magnitude slope parameter; 
+!                    can be < 0 (asteroid)
+! 
+!  For comets, additional OPTIONAL parameters can be given:
+!      M1 ...... Total absolute magnitude (comet)
+!      M2 ...... Nuclear absolute magnitude (comet)
+!      K1 ...... Total magnitude scaling factor (comet)
+!      K2 ...... Nuclear magnitude scaling factor (comet)
+!      PHCOF ... Phase coefficient for k2=5 (comet)
+!
+!  Non-gravitational models (allowed for comets OR asteroids)
+!      A1 ...... Radial non-grav accel, au/d^2
+!      A2 ...... Transverse non-grav accel, au/d^2
+!      A3 ...... Normal non-grav accel, au/d^2
+!      R0 ...... Normalizing distance, au  [2.808]
+!      ALN ..... Normalizing factor [0.1112620426]
+!      NM ...... Exponent m                 [2.15]
+!      NN ...... Exponent n                [5.093]
+!      NK ...... Exponent k               [4.6142]
+!      DT ...... Non-grav lag/delay parameter (comets), days
+!      AMRAT ... Solar pressure model, area/mass ratio, m^2/kg
+!
+ OBJECT =
+ EPOCH  = 
+ FRAME  =
+ EC     =
+ QR     =
+ TP     =
+ OM     =
+ W      =
+ IN     =
+ MA     =
+ A      =
+ N      =
+ RAD    =
+
+! Next two (H and G) for asteroids only
+ H      =
+ G      =
+
+! Next group for comets only
+ M1     =
+ M2     =
+ K1     =
+ K2     =
+ PHCOF  =
+ DT     =
+ 
+! Next group for asteroids or comets
+ A1     =
+ A2     =
+ A3     =
+ R0     =
+ ALN    =
+ NM     =
+ NN     =
+ NK     =
+ AMRAT  =
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!
+! INTRODUCTION:
+! =============
+!
+!   This file is an example run-stream input for e-mail 
+! requests. It is recommended this original be preserved 
+! and that you modify copies of it for subsequent runs, 
+! perhaps deleting these explanatory comments in your 
+! working copy. The command files can then be very short,
+! perhaps only a few lines long.
+!
+!   Horizons can be FULLY accessed by telnet or e-mail. A 
+! subset of capabilities can be accessed in GUI form via
+! WWW browser (or cgi). There are three ways to obtain 
+! complete program documentation:
+!
+!   #1) Anonymous FTP (PostScript doc)
+!          ftp://ssd.jpl.nasa.gov/pub/ssd/Horizons_doc.ps
+!
+!   #2) E-mail "horizons@ssd.jpl.nasa.gov" with message 
+!       subject header of ...
+!
+!         "HORIZONS-DOC-TEXT"    (ASCII file)
+!               or
+!         "HORIZONS-DOC-PS"      (PostScript file)
+!
+!   #3) E-mail this file with "COMMAND = '?!'" to 
+!
+!                "horizons@ssd.jpl.nasa.gov"
+!
+!       with subject header containing the word "JOB". 
+!       An ASCII text output file will be mailed back with 
+!       the results. 
+!
+!
+! ACCESSING HORIZONS:
+! ===================
+!
+!  1) TELNET (full, interactive access w/prompts, on-line 
+!             help, customized output, mail, FTP and Kermit
+!             transfer): 
+!
+!       telnet ssd.jpl.nasa.gov 6775
+!
+!  2) WWW (partial, passive interactive GUI-style access to 
+!          major features):
+!
+!       Point browser to "https://ssd.jpl.nasa.gov/horizons.cgi"
+!
+!  3) E-MAIL (full, batch type access)
+!       E-mail a modified version of this text file to 
+!       Horizons and receive output back, also by e-mail. 
+!
+!
+! BATCH JOB SUBMITTAL:
+! ====================
+!   This file is called a "varlist". It is similar in 
+! concept to FORTRAN namelists, but more flexible. It is a 
+! way of loading variables into a running program from 
+! outside the program. Within a line, everything after an 
+! exclamation mark (!) is considered a comment and ignored. 
+! You may comment your own command file when you develop 
+! them.
+!
+! MAJOR POINTS:
+! ------------
+! 1) One important thing to remember is .... variables that 
+!    are lists (contain spaces or are comma-delimited), MUST
+!    be enclosed in quotes. For example,
+!
+!                     QUANTITIES = 1,3,5,6 
+!                     COMMAND = A > 10; A < 12;
+!                     START_TIME = 1996-jan-1 10:00
+!                     STOP_TIME = 1996-jan-2 10:00
+!
+! ... WON'T WORK. Enclose them in quotes as below:
+!
+!                     QUANTITIES = '1,3,5,6'
+!                     COMMAND = 'A > 10; A < 12;'
+!                     START_TIME = '1996-jan-1 10:00'
+!                     START_TIME = '1996-jan-2 10:00'
+!
+!    SUGGESTION: If you enclose EVERY variable assignment 
+!    in quotes, it would be one less thing to remember ...
+!
+! 2) The order of the variables in this file doesn't matter.
+!    Later settings of the same variable override prior 
+!    settings.
+!
+! 3) Not all variables need to be set. For example, if you 
+!    want to produce an observer table (TABLE_TYPE=OBS), 
+!    VEC_TABLE is ignored by the program.
+!
+! 4) If you neglect to specify a variable that IS needed, 
+!    the program will assume pre-set default values. 
+!
+! HOW TO SUBMIT A JOB:
+! --------------------
+!
+!   #1) Edit this text file, changing the variables to 
+!       produce desired output.
+!
+!   #2) Mail the final ASCII file to: 
+!       
+!        horizons@ssd.jpl.nasa.gov 
+!
+!        Message SUBJECT line must contain the word "JOB" 
+!        (case insensitive).
+!
+!        - If the message arrives without this keyword in 
+!           the subject, your job will not be executed.
+!
+!        - If the first characters in this file are not 
+!           "!$$SOF", your job will not be executed. 
+!
+!        - If you send the file as a MIME-encoded attachment
+!           or PostScript file or RTF or in some proprietary
+!           word-processor format, your job may not be 
+!           executed. Readable ASCII plain-text only!
+!
+!     Common problems:
+!
+!      A) Some mail programs, mostly on PC's, 
+!         automatically (without your knowledge) reformat 
+!         outgoing messages to have maximum line lengths 
+!         of "X", where X is 60 or 75 or some other value. 
+!         This can result in comment lines being broken up 
+!         such that a new line is created by the mailer, 
+!         starting without a "!". This causes an error on
+!         our end when Horizons tries to read the line as
+!         a variable assignment. If your mailer does this, 
+!         Horizons will return an error message that doesn't
+!         seem to match what you thought you mailed in --
+!         because the mailer reformatted it.  Perhaps the 
+!         re-formatting option can be turned off. If not, 
+!         keep all lines shorter than the maximum your 
+!         mailer accepts -- realizing the limit can vary
+!         with the font in use, on some systems.
+!
+!      B) Modern e-mail software increasingly assumes it is 
+!         communicating with other systems like itself, so 
+!         automatically encodes outgoing e-mail with font 
+!         codes, HTML formatting symbols, and MIME 
+!         attachments. An elaborate front-end is needed to 
+!         interpret all this, which Horizons does not yet 
+!         have. For example, it may seem that your command
+!         file clearly says ...
+!
+! !$$SOF
+! EMAIL_ADDR= 'you@your.computer.com'
+! TABLE_TYPE= OBS
+!
+!         ... but your e-mail software, if not set 
+!         to plain-text, reworks it such that it arrives 
+!         here looking like this:
+!
+! <bigger> !$$SOF <\bigger> 
+! EMAIL_ADDR =3D =E2=80=98you@your.computer.com=E2=80=99=20
+! TABLE_TYPE= OBS =3D
+!
+!         ... which Horizons can't interpret, hence can't 
+!         send an error message back to, hence no response. 
+!
+!         The solution may vary from mailer to mailer, but
+!         Horizons will attempt to mail back error messages 
+!         pointing to specific problems. If you don't get a
+!         resonse, trying send with EMAIL_ADDR= ' ' (blank)
+!         so the system will default to using your return
+!         email address instead of trying to parse the 
+!         message. 
+!
+!         A helpful (if dated) guide to suitably configuring 
+!         various mailers to send plain-text is here:
+!
+!           ftp://ssd.jpl.nasa.gov/pub/ssd/Configuring_Mail_Clients_to_Send_Plain_ASCII_Text.pdf
+!
+!          https://ssd.jpl.nasa.gov/x/Configuring_Mail_Clients_to_Send_Plain_ASCII_Text.pdf
+!
+!         If you can't resolve the problem on your end, 
+!         contact 
+!
+!              Jon.D.Giorgini@jpl.nasa.gov 
+!
+!   #3) Horizons will then read these variables and execute 
+! accordingly. Output will be returned by e-mail immediately
+! upon program completion. This should normally take seconds
+! to minutes, depending on run length and queue. However, 
+! e-mail transmission delays are unpredictable functions of
+! the network state .. and how many requests are in the 
+! queue ahead of yours. Thus, the reception delay you 
+! experience might vary day-to-day.
+!
+! It is helpful to read the main program documentation or 
+! execute Horizons interactively with the telnet interface 
+! a few times, to understand the effect of each variable.
+!
+! UPDATES:
+!
+!   Check the anonymous ftp site for the files 
+!
+!ftp://ssd.jpl.nasa.gov/pub/ssd/horizons_batch_example.long
+!ftp://ssd.jpl.nasa.gov/pub/ssd/horizons_batch_example.brief
+!
+!   ... occasionally. They will be updated to reflect new 
+! program capabilities, when they are installed. You could 
+! also periodically submit a batch job with "COMMAND=NEWS" 
+! to retrieve any program announcements about new features 
+! or, of course, connect to the telnet port directly and do
+! the same thing.
+!
+!   It is also possible to retrieve the latest example 
+! batch-files by sending an e-mail request. Mail to 
+! "horizons@ssd.jpl.nasa.gov" with one of these phrases in 
+! the SUBJECT line of the message:
+!
+! "BATCH-LONG"  (latest fully commented example run-stream)
+! "BATCH-BRIEF" (latest example run-stream without comments)
+!
+!
+! SUMMARY OF SERVER COMMANDS:
+!
+! The message SUBJECT line sent to 
+!
+!     horizons@ssd.jpl.nasa.gov
+!
+! ... must contain one of those shown below:
+!
+!   SUBJECT HEADER  MEANING
+!   --------------  ---------------------------------------
+!   JOB             Execute Horizons run-stream.
+!   DOC-TEXT        Request ASCII (plain-text) version of 
+!                    current documentation.
+!   DOC-PS          Request PostScript version of current 
+!                    documentation.
+!   BATCH-LONG      Request latest fully commented example 
+!                    batch file (this file).
+!   BATCH-BRIEF     Request latest example batch file 
+!                    without comments.
+!   QUESTION        Message fowarded to cognizant engineer.
+!
+!$$EOF++++++++++++++++++++++++++++++++++++++++++++++++++++++

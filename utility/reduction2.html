@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script src="de405.js"></script>
+<script src="sofa.src.js"></script>
+<script src="ascp2020.405.js"></script>
+<script>
+
+let de=new DE405();
+test();
+
+function test(){
+	geocentricRADEC(2458850.5+69.183930/24.0/60.0/60.0);
+}
+
+function getBodyLightCorrected(earth,bodyNun,jd){
+
+	let jd2=jd;
+
+	let body=de.getAllPropertiesForSeries(bodyNun,jd2);
+	for(let i=0;i<2;i++){
+
+		let geocrntricMercury=new Array();
+		body[0]=body[0]-earth[0];
+		body[1]=body[1]-earth[1];
+		body[2]=body[2]-earth[2];
+
+		let dist=vecLen(body);
+
+		const c=299792.458;
+
+		jd2=jd-dist/c/24.0/60.0/60.0;
+
+		body=de.getAllPropertiesForSeries(0,jd2);
+	}
+
+	body[0]=body[0]-earth[0];
+	body[1]=body[1]-earth[1];
+	body[2]=body[2]-earth[2];
+
+	return body;	
+}
+
+function geocentricRADEC(jd){
+	//2020-Jan-02 00:00:00.000 2458850.500000000     RA 276.26385 DEC -24.67144 Light 11.943080 69.183930
+
+	jd=jd;
+
+	let emb=de.getAllPropertiesForSeries(2,jd);
+	let moon=de.getAllPropertiesForSeries(9,jd);
+	let earth=DE405.getEarthPositionFromEMB(emb,moon);
+
+	let geocrntricMercury=getBodyLightCorrected(earth,0,jd);
+	RaDec=toPolar(geocrntricMercury);
+
+	RaDec[1]=Math.PI/2.0-RaDec[1];  //Dec.  Offset to make 0 the equator, and the poles +/-90 deg
+	if(RaDec[2]<0){RaDec[2]+=2*Math.PI;} //Ensure RA is positive
+
+	console.log(`${RaDec[1]*180.0/Math.PI+24.67144} ${RaDec[2]*180.0/Math.PI-276.26385}`);
+
+}
+
+function vecLen(v){
+	return Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
+}
+
+//Converts cartesian XYZ coordinates to polar (e.g. J2000 xyz to Right Accention and Declication)
+function toPolar(xyz){
+	let t = new Array();
+	t[0] = Math.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1] + xyz[2] * xyz[2]);
+	t[1] = Math.acos(xyz[2] / t[0]);
+	t[2] = Math.atan2(xyz[1], xyz[0]);
+
+	if(t[1]<0){t[1]+=2*Math.PI;}
+	if(t[2]<0){t[2]+=2*Math.PI;}
+
+	return t;
+}
+
+</script>
+</body>
+</html>

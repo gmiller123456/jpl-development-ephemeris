@@ -1,0 +1,107 @@
+Format of header of binary JPL Development Ephemeris file
+Greg Miller (gmiller@gregmiller.net)
+http://www.celestialprogramming.com/
+
+The header contains some unknown/inferred values which means existing programs likely will
+not be able to read new files which add new planets/series.
+
+The referces to things like "Group 1010" are references to portions of the ASCII header and
+are explained in detail at celestialprogramming.com.
+
+The overall format of the header is 2 times the blocksize.  The blocksize isn't in the header
+and must be computed after reading the first half of the header using the inferred property
+numbers in Table 2, or looked up from Table 3 using the DE version.  But, for the versions
+ending in "t", the "t" does no appear in the header, so you will need a different method of
+identifying those versions' block sizes.  Computing the block size always works for all
+existing versions.  Refer to the source code findRecLength() function for the exact details.
+
+The first half of the header is from 0 - blocksize.  It contains all but the last two fields
+listed in Table 1.  The second half of the header goes from blocksize - 2*blocksize, and
+contains all of the constants from group 1041.
+
+The "undefined" portions of the file should be set to null, but some asc2eph programs do not
+clear the memory of these portions, and some binary files floating around do have leaked
+personal information in these areas.  So you cannot count on these to be null, though many
+programs do properly set them to null.  If they were set to null, it'd be possible to infer
+the blocksize for compatibility with newer DE versions, but even the files distributed by
+NASA have extranious information in these areas.
+
+s - string
+l - 32 bit integer (long)
+d - 64 bit floating point (double)
+
+Table 1 - Field offsets
+Offset       Type             Description
+0-83         s                First text line from Group 1010 (name)
+84-167       s                Second text line from Group 1010 (Start date)
+168-251      s                Third text line from Group 1010 (End date)
+252-2645     array of s       Names of constants (Group 1040), each 6 characters.  Undefined after last constant
+2652-2659    d                Start JD
+2660-2667    d                End JD
+2668-2675    l                Days per block
+2676-2679    l                Number of constants (constantCount)
+2680-2687    d                AU per km
+2688-2695    d                Ratio between Earth/Moon (for computing Earth position from barycenter)
+2696-2839    array of array   *12 arrays of 3 32 bit ints each (36 ints total).  Represents columns 1-12 of Group 1050
+2840-2843    l                DE Version (e.g. 200, 405, etc).
+2844-2855    array of l       1 array of 3 Ints.  Represents column 13 of Group 1050
+2856-var     array of s       If more than 400 constants, 400-constantCount constant names.
+var-var      array of l       After (400-constantCount)*6, 2 arrays of 3 ints.  Represents cols 14,15 of Group 1050
+var-block    undefined        Undefined until end of block size
+block+1-var  d                All values for constants
+var-2*block  d                Undefined to end of block size
+
+*Each of the three entries in the array represent rows 1-3 of group 1050
+
+"block" is the computed block size using the inferred number of properties for each variable
+in Table 2.
+
+Table 2 - Properties per variable
+Index  Properties       Units          Center Description
+0      x,y,z            km             SSB    Mercury
+1      x,y,z            km             SSB    Venus
+2      x,y,z            km             SSB    Earth-Moon barycenter
+3      x,y,z            km             SSB    Mars
+4      x,y,z            km             SSB    Jupiter
+5      x,y,z            km             SSB    Saturn
+6      x,y,z            km             SSB    Uranus
+7      x,y,z            km             SSB    Neptune
+8      x,y,z            km             SSB    Pluto
+9      x,y,z            km             Earth  Moon (geocentric)
+10     x,y,z            km             SSB    Sun
+11     dPsi,dEps        radians               Earth Nutations in longitude and obliquity
+12     phi,theta,psi    radians               Lunar mantle libration
+13     Ox,Oy,Oz         radians/day           Lunar mantle angular velocity
+14     t                seconds               TT-TDB (at geocenter)
+
+Table 3 - Block sizes by version
+Version      Block Size
+102          6184
+200          6608
+202          6608
+403          8144
+405          8144
+406          5824
+410          8144
+413          8144
+414          8144
+418          8144
+421          8144
+422          8144
+423          8144
+424          8144
+430          8144
+430t         7856
+431          8144
+432          7504
+432t         7856
+433          8144
+434          8144
+435          8144
+436          8144
+436t         8976
+438          8144
+438t         8336
+440          8144
+440t         8976
+441          8144

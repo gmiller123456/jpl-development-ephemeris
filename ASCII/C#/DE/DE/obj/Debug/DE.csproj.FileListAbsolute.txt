@@ -1,0 +1,14 @@
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\bin\Debug\DE.exe
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\bin\Debug\DE.pdb
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.csprojAssemblyReference.cache
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.csproj.CoreCompileInputs.cache
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.exe
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\obj\Debug\DE.pdb
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\bin\Debug\DE.exe
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\bin\Debug\DE.pdb
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\obj\Debug\DE.csprojAssemblyReference.cache
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\obj\Debug\DE.csproj.CoreCompileInputs.cache
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\obj\Debug\DE.exe
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\obj\Debug\DE.pdb
+C:\prog\Astronomy\DE - My implementation\DEcsharp\DE\DE\bin\Debug\DE.exe.config
+C:\prog\temp\jpl-development-ephemeris\DEcsharp\DE\DE\bin\Debug\DE.exe.config

@@ -1,0 +1,37 @@
+<html>
+<head>
+
+</head>
+<body>
+<script src="jplde.js"></script>
+<script>
+/*
+Greg Miller (gmiller@gregmiller.net) 2022
+Released as public domain
+http://www.celestialprogramming.com/
+
+Example call of jplde.js
+*/
+
+let de;
+
+async function test(){
+    data=await fetchJSON();
+    const dv=new DataView(data);
+    de=new JPLDE(dv);
+
+    console.log(de.getPlanet(0,2451736.5));
+}
+
+async function fetchJSON() {
+    const response = await fetch('jpleph2000-2040.405');
+    const blob = await response.blob();
+    const data= await blob.arrayBuffer();
+    return data;
+}
+
+test();
+
+</script>
+</body>
+</html>
