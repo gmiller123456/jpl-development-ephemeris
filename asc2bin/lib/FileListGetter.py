@@ -32,7 +32,7 @@ class FileListGetter:
         for f in allFiles:
             s=self._getStartJDForFile(f)
             e=self._getEndJDForFile(f)
-            if(startJD>=s and endJD<=e):
+            if(startJD>=s or endJD<=e):
                 self.files.append(f)
 
     def _getEndJDForFile(self,filename):

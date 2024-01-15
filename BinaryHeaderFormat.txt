@@ -11,7 +11,7 @@ are explained in detail at celestialprogramming.com.
 The overall format of the header is 2 times the blocksize.  The blocksize isn't in the header
 and must be computed after reading the first half of the header using the inferred property
 numbers in Table 2, or looked up from Table 3 using the DE version.  But, for the versions
-ending in "t", the "t" does no appear in the header, so you will need a different method of
+ending in "t", the "t" does not appear in the header, so you will need a different method of
 identifying those versions' block sizes.  Computing the block size always works for all
 existing versions.  Refer to the source code findRecLength() function for the exact details.
 
